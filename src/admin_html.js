@@ -1285,7 +1285,7 @@
 
         // Check if already authenticated
         if (token) {
-            verifyToken();
+            await verifyToken();
         } else {
             showLogin();
         }
@@ -1914,6 +1914,7 @@
 </body>
 </html>
 `;
+
 
 
 
