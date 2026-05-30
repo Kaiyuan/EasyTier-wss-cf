@@ -1,4 +1,4 @@
-export const serveAdminDashboard = `<!DOCTYPE html>
+﻿export const serveAdminDashboard = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -737,10 +737,10 @@ export const serveAdminDashboard = `<!DOCTYPE html>
                     <i data-lucide="languages" style="width: 14px; height: 14px;"></i>
                     <select id="loginLang" class="top-lang-select" onchange="switchLanguage(this.value)">
                         <option value="en">English</option>
-                        <option value="zh-CN">简体中�?/option>
-                        <option value="zh-TW">繁體中文</option>
-                        <option value="ja">日本�?/option>
-                        <option value="ko">한국�?/option>
+                        <option value="zh-CN">绠€浣撲腑锟?/option>
+                        <option value="zh-TW">绻侀珨涓枃</option>
+                        <option value="ja">鏃ユ湰锟?/option>
+                        <option value="ko">頃滉淡锟?/option>
                     </select>
                     <i data-lucide="chevron-down" class="top-lang-arrow"></i>
                 </div>
@@ -749,7 +749,7 @@ export const serveAdminDashboard = `<!DOCTYPE html>
             <form onsubmit="handleLogin(event)">
                 <div class="form-group">
                     <label for="passwordInput" data-i18n="login-label">Admin Password</label>
-                    <input type="password" id="passwordInput" class="form-control" placeholder="•••••••�? required>
+                    <input type="password" id="passwordInput" class="form-control" placeholder="鈥⑩€⑩€⑩€⑩€⑩€⑩€拷? required>
                 </div>
                 <button type="submit" class="btn-submit" data-i18n="login-btn">Sign In</button>
             </form>
@@ -809,10 +809,10 @@ export const serveAdminDashboard = `<!DOCTYPE html>
                         <i data-lucide="languages" style="width: 14px; height: 14px;"></i>
                         <select id="dashboardLang" class="top-lang-select" onchange="switchLanguage(this.value)">
                             <option value="en">English</option>
-                            <option value="zh-CN">简体中�?/option>
-                            <option value="zh-TW">繁體中文</option>
-                            <option value="ja">日本�?/option>
-                            <option value="ko">한국�?/option>
+                            <option value="zh-CN">绠€浣撲腑锟?/option>
+                            <option value="zh-TW">绻侀珨涓枃</option>
+                            <option value="ja">鏃ユ湰锟?/option>
+                            <option value="ko">頃滉淡锟?/option>
                         </select>
                         <i data-lucide="chevron-down" class="top-lang-arrow"></i>
                     </div>
@@ -1043,212 +1043,212 @@ export const serveAdminDashboard = `<!DOCTYPE html>
                 "set-pass-env-note": "The admin password is configured via the ADMIN_PASSWORD environment variable in the Cloudflare Workers dashboard. Changes take effect after redeployment."
             },
             "zh-CN": {
-                "login-label": "管理员密�?,
-                "login-btn": "登录",
-                "login-error": "密码错误，请重试�?,
-                "menu-overview": "系统概览",
-                "menu-rooms": "房间与节�?,
-                "menu-tokens": "连接令牌",
-                "menu-settings": "配置中心",
-                "role-admin": "系统管理�?,
-                "stat-status": "运行状�?,
-                "stat-online": "正常运行",
-                "stat-active-rooms": "活跃房间�?,
-                "stat-connected-peers": "总在线节�?,
-                "stat-total-traffic": "传输流量 (接收/发�?",
-                "topo-map-title": "网络拓扑结构�?,
-                "topo-no-nodes": "暂无节点连接，中继服务器空闲中�?,
-                "rooms-list-title": "活跃中继房间列表",
-                "th-room-name": "房间 ID",
-                "th-peer-count": "在线节点�?,
-                "th-actions": "操作",
-                "btn-close": "关闭",
-                "th-peer-id": "节点 ID",
-                "th-virtual-ip": "虚拟 IP (EasyTier)",
-                "th-hostname": "主机�?,
-                "th-version": "EasyTier 版本",
-                "th-rx-tx": "接收 / 发送流�?,
-                "th-conn-time": "已连接时�?,
-                "tokens-title": "客户端连接访问令�?(Tokens)",
-                "btn-gen-token": "创建新令�?,
-                "th-token": "令牌秘钥",
-                "th-desc": "令牌用途描�?,
-                "th-created": "创建时间",
-                "settings-general": "全局中继配置",
-                "set-req-token-title": "启用客户端连接令牌校�?,
-                "set-req-token-desc": "强制 EasyTier 客户端在连接时必须携带合法的 token 查询参数，否则拒绝连接�?,
-                "settings-admin-pass": "修改管理员登录密�?,
-                "set-new-pass": "输入新密�?,
-                "btn-save": "保存修改",
-                "btn-cancel": "取消",
-                "btn-confirm": "生成",
-                "alert-security-title": "安全警告: ",
-                "alert-security-desc": "您当前正在使用默认密�?'admin' 登录，为了安全，请立即修改密码！",
-                "action-view": "查看节点",
-                "action-kick": "踢出",
-                "action-ban": "加入黑名�?,
-                "action-delete": "注销",
-                "msg-changed-pass": "管理员密码修改成功！",
-                "msg-gen-success": "令牌生成成功�?,
-                "msg-kicked-success": "节点已成功踢出！",
-                "msg-deleted-success": "令牌已成功注销�?,
-                "set-pass-env-note": "管理员密码通过 Cloudflare Workers 控制台中�?ADMIN_PASSWORD 环境变量进行配置，修改后重新部署即可生效�?
+                "login-label": "绠＄悊鍛樺瘑锟?,
+                "login-btn": "鐧诲綍",
+                "login-error": "瀵嗙爜閿欒锛岃閲嶈瘯锟?,
+                "menu-overview": "绯荤粺姒傝",
+                "menu-rooms": "鎴块棿涓庤妭锟?,
+                "menu-tokens": "杩炴帴浠ょ墝",
+                "menu-settings": "閰嶇疆涓績",
+                "role-admin": "绯荤粺绠＄悊锟?,
+                "stat-status": "杩愯鐘讹拷?,
+                "stat-online": "姝ｅ父杩愯",
+                "stat-active-rooms": "娲昏穬鎴块棿锟?,
+                "stat-connected-peers": "鎬诲湪绾胯妭锟?,
+                "stat-total-traffic": "浼犺緭娴侀噺 (鎺ユ敹/鍙戯拷?",
+                "topo-map-title": "缃戠粶鎷撴墤缁撴瀯锟?,
+                "topo-no-nodes": "鏆傛棤鑺傜偣杩炴帴锛屼腑缁ф湇鍔″櫒绌洪棽涓拷?,
+                "rooms-list-title": "娲昏穬涓户鎴块棿鍒楄〃",
+                "th-room-name": "鎴块棿 ID",
+                "th-peer-count": "鍦ㄧ嚎鑺傜偣锟?,
+                "th-actions": "鎿嶄綔",
+                "btn-close": "鍏抽棴",
+                "th-peer-id": "鑺傜偣 ID",
+                "th-virtual-ip": "铏氭嫙 IP (EasyTier)",
+                "th-hostname": "涓绘満锟?,
+                "th-version": "EasyTier 鐗堟湰",
+                "th-rx-tx": "鎺ユ敹 / 鍙戦€佹祦锟?,
+                "th-conn-time": "宸茶繛鎺ユ椂锟?,
+                "tokens-title": "瀹㈡埛绔繛鎺ヨ闂护锟?(Tokens)",
+                "btn-gen-token": "鍒涘缓鏂颁护锟?,
+                "th-token": "浠ょ墝绉橀挜",
+                "th-desc": "浠ょ墝鐢ㄩ€旀弿锟?,
+                "th-created": "鍒涘缓鏃堕棿",
+                "settings-general": "鍏ㄥ眬涓户閰嶇疆",
+                "set-req-token-title": "鍚敤瀹㈡埛绔繛鎺ヤ护鐗屾牎锟?,
+                "set-req-token-desc": "寮哄埗 EasyTier 瀹㈡埛绔湪杩炴帴鏃跺繀椤绘惡甯﹀悎娉曠殑 token 鏌ヨ鍙傛暟锛屽惁鍒欐嫆缁濊繛鎺ワ拷?,
+                "settings-admin-pass": "淇敼绠＄悊鍛樼櫥褰曞瘑锟?,
+                "set-new-pass": "杈撳叆鏂板瘑锟?,
+                "btn-save": "淇濆瓨淇敼",
+                "btn-cancel": "鍙栨秷",
+                "btn-confirm": "鐢熸垚",
+                "alert-security-title": "瀹夊叏璀﹀憡: ",
+                "alert-security-desc": "鎮ㄥ綋鍓嶆鍦ㄤ娇鐢ㄩ粯璁ゅ瘑锟?'admin' 鐧诲綍锛屼负浜嗗畨鍏紝璇风珛鍗充慨鏀瑰瘑鐮侊紒",
+                "action-view": "鏌ョ湅鑺傜偣",
+                "action-kick": "韪㈠嚭",
+                "action-ban": "鍔犲叆榛戝悕锟?,
+                "action-delete": "娉ㄩ攢",
+                "msg-changed-pass": "绠＄悊鍛樺瘑鐮佷慨鏀规垚鍔燂紒",
+                "msg-gen-success": "浠ょ墝鐢熸垚鎴愬姛锟?,
+                "msg-kicked-success": "鑺傜偣宸叉垚鍔熻涪鍑猴紒",
+                "msg-deleted-success": "浠ょ墝宸叉垚鍔熸敞閿€锟?,
+                "set-pass-env-note": "绠＄悊鍛樺瘑鐮侀€氳繃 Cloudflare Workers 鎺у埗鍙颁腑锟?ADMIN_PASSWORD 鐜鍙橀噺杩涜閰嶇疆锛屼慨鏀瑰悗閲嶆柊閮ㄧ讲鍗冲彲鐢熸晥锟?
             },
             "zh-TW": {
-                "login-label": "管理員密�?,
-                "login-btn": "登入",
-                "login-error": "密碼錯誤，請重試�?,
-                "menu-overview": "系統概覽",
-                "menu-rooms": "房間與節�?,
-                "menu-tokens": "連線權權�?,
-                "menu-settings": "配置中心",
-                "role-admin": "系統管理�?,
-                "stat-status": "運行狀�?,
-                "stat-online": "正常運行",
-                "stat-active-rooms": "活躍房間�?,
-                "stat-connected-peers": "總線上節�?,
-                "stat-total-traffic": "傳輸流量 (接收/發�?",
-                "topo-map-title": "網路拓撲結構�?,
-                "topo-no-nodes": "暫無節點連線，中繼伺服器空閒中�?,
-                "rooms-list-title": "活躍中繼房間清單",
-                "th-room-name": "房間 ID",
-                "th-peer-count": "線上節點數",
-                "th-actions": "操作",
-                "btn-close": "關閉",
-                "th-peer-id": "節�?ID",
-                "th-virtual-ip": "虛擬 IP (EasyTier)",
-                "th-hostname": "主機�?,
-                "th-version": "EasyTier 版本",
-                "th-rx-tx": "接收 / 發送流�?,
-                "th-conn-time": "已連線時間",
-                "tokens-title": "用戶端連線存取權杖 (Tokens)",
-                "btn-gen-token": "創建新權�?,
-                "th-token": "權杖密鑰",
-                "th-desc": "權杖用途描�?,
-                "th-created": "創建時間",
-                "settings-general": "全局中繼配置",
-                "set-req-token-title": "啟用用戶端連線權權杖校�?,
-                "set-req-token-desc": "強制 EasyTier 用戶端在連線時必須攜帶合法的 token 查詢參數，否則拒絕連線�?,
-                "settings-admin-pass": "修改管理員登入密�?,
-                "set-new-pass": "輸入新密�?,
-                "btn-save": "儲存修改",
-                "btn-cancel": "取消",
-                "btn-confirm": "生成",
-                "alert-security-title": "安全警告: ",
-                "alert-security-desc": "您目前正在使用預設密�?'admin' 登入，為了安全，請立即修改密碼！",
-                "action-view": "查看節�?,
-                "action-kick": "踢出",
-                "action-ban": "加入黑名�?,
-                "action-delete": "註銷",
-                "msg-changed-pass": "管理員密碼修改成功！",
-                "msg-gen-success": "權杖生成成功�?,
-                "msg-kicked-success": "節點已成功踢出�?,
-                "msg-deleted-success": "權杖已成功註銷！",
-                "set-pass-env-note": "管理員密碼透過 Cloudflare Workers 控制台中�?ADMIN_PASSWORD 環境變數進行設定，修改後重新部署即可生效�?
+                "login-label": "绠＄悊鍝″瘑锟?,
+                "login-btn": "鐧诲叆",
+                "login-error": "瀵嗙⒓閷锛岃珛閲嶈│锟?,
+                "menu-overview": "绯荤当姒傝",
+                "menu-rooms": "鎴块枔鑸囩瘈锟?,
+                "menu-tokens": "閫ｇ窔娆婃瑠锟?,
+                "menu-settings": "閰嶇疆涓績",
+                "role-admin": "绯荤当绠＄悊锟?,
+                "stat-status": "閬嬭鐙€锟?,
+                "stat-online": "姝ｅ父閬嬭",
+                "stat-active-rooms": "娲昏簫鎴块枔锟?,
+                "stat-connected-peers": "绺界窔涓婄瘈锟?,
+                "stat-total-traffic": "鍌宠几娴侀噺 (鎺ユ敹/鐧硷拷?",
+                "topo-map-title": "缍茶矾鎷撴挷绲愭锟?,
+                "topo-no-nodes": "鏆劇绡€榛為€ｇ窔锛屼腑绻间己鏈嶅櫒绌洪枓涓拷?,
+                "rooms-list-title": "娲昏簫涓辜鎴块枔娓呭柈",
+                "th-room-name": "鎴块枔 ID",
+                "th-peer-count": "绶氫笂绡€榛炴暩",
+                "th-actions": "鎿嶄綔",
+                "btn-close": "闂滈枆",
+                "th-peer-id": "绡€锟?ID",
+                "th-virtual-ip": "铏涙摤 IP (EasyTier)",
+                "th-hostname": "涓绘锟?,
+                "th-version": "EasyTier 鐗堟湰",
+                "th-rx-tx": "鎺ユ敹 / 鐧奸€佹祦锟?,
+                "th-conn-time": "宸查€ｇ窔鏅傞枔",
+                "tokens-title": "鐢ㄦ埗绔€ｇ窔瀛樺彇娆婃潠 (Tokens)",
+                "btn-gen-token": "鍓靛缓鏂版瑠锟?,
+                "th-token": "娆婃潠瀵嗛懓",
+                "th-desc": "娆婃潠鐢ㄩ€旀弿锟?,
+                "th-created": "鍓靛缓鏅傞枔",
+                "settings-general": "鍏ㄥ眬涓辜閰嶇疆",
+                "set-req-token-title": "鍟熺敤鐢ㄦ埗绔€ｇ窔娆婃瑠鏉栨牎锟?,
+                "set-req-token-desc": "寮峰埗 EasyTier 鐢ㄦ埗绔湪閫ｇ窔鏅傚繀闋堟敎甯跺悎娉曠殑 token 鏌ヨ鍙冩暩锛屽惁鍓囨嫆绲曢€ｇ窔锟?,
+                "settings-admin-pass": "淇敼绠＄悊鍝＄櫥鍏ュ瘑锟?,
+                "set-new-pass": "杓稿叆鏂板瘑锟?,
+                "btn-save": "鍎插瓨淇敼",
+                "btn-cancel": "鍙栨秷",
+                "btn-confirm": "鐢熸垚",
+                "alert-security-title": "瀹夊叏璀﹀憡: ",
+                "alert-security-desc": "鎮ㄧ洰鍓嶆鍦ㄤ娇鐢ㄩ爯瑷瘑锟?'admin' 鐧诲叆锛岀偤浜嗗畨鍏紝璜嬬珛鍗充慨鏀瑰瘑纰硷紒",
+                "action-view": "鏌ョ湅绡€锟?,
+                "action-kick": "韪㈠嚭",
+                "action-ban": "鍔犲叆榛戝悕锟?,
+                "action-delete": "瑷婚姺",
+                "msg-changed-pass": "绠＄悊鍝″瘑纰间慨鏀规垚鍔燂紒",
+                "msg-gen-success": "娆婃潠鐢熸垚鎴愬姛锟?,
+                "msg-kicked-success": "绡€榛炲凡鎴愬姛韪㈠嚭锟?,
+                "msg-deleted-success": "娆婃潠宸叉垚鍔熻ɑ閵凤紒",
+                "set-pass-env-note": "绠＄悊鍝″瘑纰奸€忛亷 Cloudflare Workers 鎺у埗鍙颁腑锟?ADMIN_PASSWORD 鐠板璁婃暩閫茶瑷畾锛屼慨鏀瑰緦閲嶆柊閮ㄧ讲鍗冲彲鐢熸晥锟?
             },
             ja: {
-                "login-label": "管理者パスワード",
-                "login-btn": "ログイン",
-                "login-error": "パスワードが正しくありません。再試行してください�?,
-                "menu-overview": "システム概要",
-                "menu-rooms": "部屋とノード",
-                "menu-tokens": "接続トークン",
-                "menu-settings": "設定センター",
-                "role-admin": "システム管理�?,
-                "stat-status": "稼働状態",
-                "stat-online": "オンライ�?,
-                "stat-active-rooms": "アクティブな部屋",
-                "stat-connected-peers": "接続中ノード�?,
-                "stat-total-traffic": "転送量 (受信/送信)",
-                "topo-map-title": "ネットワークトポロジーマップ",
-                "topo-no-nodes": "接続されているノードはありません。中継サーバーは空いています�?,
-                "rooms-list-title": "アクティブな部屋の一�?,
-                "th-room-name": "部屋 ID",
-                "th-peer-count": "接続�?,
-                "th-actions": "操作",
-                "btn-close": "閉じ�?,
-                "th-peer-id": "ノー�?ID",
-                "th-virtual-ip": "仮想 IP",
-                "th-hostname": "ホスト名",
-                "th-version": "バージョ�?,
-                "th-rx-tx": "受信 / 送信",
-                "th-conn-time": "接続時間",
-                "tokens-title": "クライアント接続用トーク�?,
-                "btn-gen-token": "トークンの生�?,
-                "th-token": "トークン",
-                "th-desc": "説明",
-                "th-created": "作成日時",
-                "settings-general": "一般設�?,
-                "set-req-token-title": "接続トークンの検証を強制",
-                "set-req-token-desc": "クライアントが有効な token パラメータを持って接続することを強制します�?,
-                "settings-admin-pass": "管理者パスワードの変�?,
-                "set-new-pass": "新しいパスワード",
-                "btn-save": "パスワードを保存",
-                "btn-cancel": "キャンセ�?,
-                "btn-confirm": "確認",
-                "alert-security-title": "セキュリティ警告: ",
-                "alert-security-desc": "デフォルトのパスワー�?'admin' を使用しています。すぐに変更してください�?,
-                "action-view": "詳細表示",
-                "action-kick": "キッ�?,
-                "action-ban": "禁止リストへ",
-                "action-delete": "削除",
-                "msg-changed-pass": "管理者パスワードが更新されました�?,
-                "msg-gen-success": "トークンが生成されました�?,
-                "msg-kicked-success": "ノードをキックしました！",
-                "msg-deleted-success": "トークンを削除しました！",
-                "set-pass-env-note": "管理者パスワード�?Cloudflare Workers ダッシュボード�?ADMIN_PASSWORD 環境変数で設定します。変更は再デプロイ後に有効になります�?
+                "login-label": "绠＄悊鑰呫儜銈广儻銉笺儔",
+                "login-btn": "銉偘銈ゃ兂",
+                "login-error": "銉戙偣銉兗銉夈亴姝ｃ仐銇忋亗銈娿伨銇涖倱銆傚啀瑭﹁銇椼仸銇忋仩銇曘亜锟?,
+                "menu-overview": "銈枫偣銉嗐儬姒傝",
+                "menu-rooms": "閮ㄥ眿銇ㄣ儙銉笺儔",
+                "menu-tokens": "鎺ョ稓銉堛兗銈兂",
+                "menu-settings": "瑷畾銈汇兂銈裤兗",
+                "role-admin": "銈枫偣銉嗐儬绠＄悊锟?,
+                "stat-status": "绋煎儘鐘舵厠",
+                "stat-online": "銈兂銉┿偆锟?,
+                "stat-active-rooms": "銈偗銉嗐偅銉栥仾閮ㄥ眿",
+                "stat-connected-peers": "鎺ョ稓涓儙銉笺儔锟?,
+                "stat-total-traffic": "杌㈤€侀噺 (鍙椾俊/閫佷俊)",
+                "topo-map-title": "銉嶃儍銉堛儻銉笺偗銉堛儩銉偢銉笺優銉冦儣",
+                "topo-no-nodes": "鎺ョ稓銇曘倢銇︺亜銈嬨儙銉笺儔銇亗銈娿伨銇涖倱銆備腑缍欍偟銉笺儛銉笺伅绌恒亜銇︺亜銇俱仚锟?,
+                "rooms-list-title": "銈偗銉嗐偅銉栥仾閮ㄥ眿銇竴锟?,
+                "th-room-name": "閮ㄥ眿 ID",
+                "th-peer-count": "鎺ョ稓锟?,
+                "th-actions": "鎿嶄綔",
+                "btn-close": "闁夈仒锟?,
+                "th-peer-id": "銉庛兗锟?ID",
+                "th-virtual-ip": "浠兂 IP",
+                "th-hostname": "銉涖偣銉堝悕",
+                "th-version": "銉愩兗銈搞儳锟?,
+                "th-rx-tx": "鍙椾俊 / 閫佷俊",
+                "th-conn-time": "鎺ョ稓鏅傞枔",
+                "tokens-title": "銈儵銈ゃ偄銉炽儓鎺ョ稓鐢ㄣ儓銉笺偗锟?,
+                "btn-gen-token": "銉堛兗銈兂銇敓锟?,
+                "th-token": "銉堛兗銈兂",
+                "th-desc": "瑾槑",
+                "th-created": "浣滄垚鏃ユ檪",
+                "settings-general": "涓€鑸ō锟?,
+                "set-req-token-title": "鎺ョ稓銉堛兗銈兂銇瑷笺倰寮峰埗",
+                "set-req-token-desc": "銈儵銈ゃ偄銉炽儓銇屾湁鍔广仾 token 銉戙儵銉°兗銈裤倰鎸併仯銇︽帴缍氥仚銈嬨亾銇ㄣ倰寮峰埗銇椼伨銇欙拷?,
+                "settings-admin-pass": "绠＄悊鑰呫儜銈广儻銉笺儔銇锟?,
+                "set-new-pass": "鏂般仐銇勩儜銈广儻銉笺儔",
+                "btn-save": "銉戙偣銉兗銉夈倰淇濆瓨",
+                "btn-cancel": "銈儯銉炽偦锟?,
+                "btn-confirm": "纰鸿獚",
+                "alert-security-title": "銈汇偔銉ャ儶銉嗐偅璀﹀憡: ",
+                "alert-security-desc": "銉囥儠銈┿儷銉堛伄銉戙偣銉兗锟?'admin' 銈掍娇鐢ㄣ仐銇︺亜銇俱仚銆傘仚銇愩伀澶夋洿銇椼仸銇忋仩銇曘亜锟?,
+                "action-view": "瑭崇窗琛ㄧず",
+                "action-kick": "銈儍锟?,
+                "action-ban": "绂佹銉偣銉堛伕",
+                "action-delete": "鍓婇櫎",
+                "msg-changed-pass": "绠＄悊鑰呫儜銈广儻銉笺儔銇屾洿鏂般仌銈屻伨銇椼仧锟?,
+                "msg-gen-success": "銉堛兗銈兂銇岀敓鎴愩仌銈屻伨銇椼仧锟?,
+                "msg-kicked-success": "銉庛兗銉夈倰銈儍銈仐銇俱仐銇燂紒",
+                "msg-deleted-success": "銉堛兗銈兂銈掑墛闄ゃ仐銇俱仐銇燂紒",
+                "set-pass-env-note": "绠＄悊鑰呫儜銈广儻銉笺儔锟?Cloudflare Workers 銉€銉冦偡銉ャ儨銉笺儔锟?ADMIN_PASSWORD 鐠板澶夋暟銇цō瀹氥仐銇俱仚銆傚鏇淬伅鍐嶃儑銉椼儹銈ゅ緦銇湁鍔广伀銇倞銇俱仚锟?
             },
             ko: {
-                "login-label": "관리자 비밀번호",
-                "login-btn": "로그�?,
-                "login-error": "비밀번호가 잘못되었습니�? 다시 시도하십시오.",
-                "menu-overview": "시스�?개요",
-                "menu-rooms": "�?�?피어",
-                "menu-tokens": "연결 토큰",
-                "menu-settings": "설정 센터",
-                "role-admin": "시스�?관리자",
-                "stat-status": "서버 상태",
-                "stat-online": "작동 �?,
-                "stat-active-rooms": "활성화된 �?,
-                "stat-connected-peers": "�?연결 피어",
-                "stat-total-traffic": "트래�?(수신/송신)",
-                "topo-map-title": "네트워크 토폴로지",
-                "topo-no-nodes": "연결�?노드가 없습니다. WSS 릴레�?서버가 비어 있습니다.",
-                "rooms-list-title": "활성 릴레�?�?목록",
-                "th-room-name": "�?ID",
-                "th-peer-count": "연결 피어 �?,
-                "th-actions": "작업",
-                "btn-close": "닫기",
-                "th-peer-id": "피어 ID",
-                "th-virtual-ip": "가�?IP",
-                "th-hostname": "호스�?이름",
-                "th-version": "버전",
-                "th-rx-tx": "수신 / 송신 트래�?,
-                "th-conn-time": "연결 시간",
-                "tokens-title": "클라이언�?연결 토큰",
-                "btn-gen-token": "토큰 생성",
-                "th-token": "토큰",
-                "th-desc": "설명",
-                "th-created": "생성�?,
-                "settings-general": "일반 설정",
-                "set-req-token-title": "연결 토큰 필수 검�?,
-                "set-req-token-desc": "EasyTier 클라이언트가 연결�?�?유효�?token 매개변수를 전송하도�?강제합니�?",
-                "settings-admin-pass": "관리자 비밀번호 변�?,
-                "set-new-pass": "�?비밀번호",
-                "btn-save": "비밀번호 저�?,
-                "btn-cancel": "취소",
-                "btn-confirm": "확인",
-                "alert-security-title": "보안 경고: ",
-                "alert-security-desc": "기본 관리자 비밀번호 'admin'�?사용하고 있습니다. 지�?바로 변경하십시�?",
-                "action-view": "피어 목록",
-                "action-kick": "추방",
-                "action-ban": "차단 목록",
-                "action-delete": "삭제",
-                "msg-changed-pass": "비밀번호가 성공적으�?변경되었습니다!",
-                "msg-gen-success": "토큰�?생성되었습니�?",
-                "msg-kicked-success": "피어가 성공적으�?추방되었습니�?",
-                "msg-deleted-success": "토큰�?삭제되었습니�?",
-                "set-pass-env-note": "관리자 비밀번호�?Cloudflare Workers 대시보드의 ADMIN_PASSWORD 환경 변수로 설정합니�? 변�?사항은 재배�?�?적용됩니�?"
+                "login-label": "甏€毽瀽 牍勲皜氩堩樃",
+                "login-btn": "搿滉犯锟?,
+                "login-error": "牍勲皜氩堩樃臧€ 鞛橂霅橃棃鞀惦媹锟? 雼れ嫓 鞁滊弰頃橃嫮鞁滌槫.",
+                "menu-overview": "鞁滌姢锟?臧滌殧",
+                "menu-rooms": "锟?锟?頂检柎",
+                "menu-tokens": "鞐瓣舶 韱犿伆",
+                "menu-settings": "靹れ爼 靹柬劙",
+                "role-admin": "鞁滌姢锟?甏€毽瀽",
+                "stat-status": "靹滊矂 靸來儨",
+                "stat-online": "鞛戨彊 锟?,
+                "stat-active-rooms": "頇滌劚頇旊悳 锟?,
+                "stat-connected-peers": "锟?鞐瓣舶 頂检柎",
+                "stat-total-traffic": "韸鸽灅锟?(靾橃嫚/靻§嫚)",
+                "topo-map-title": "雱ろ姼鞗岉伂 韱犿彺搿滌",
+                "topo-no-nodes": "鞐瓣舶锟?雲鸽摐臧€ 鞐嗢姷雼堧嫟. WSS 毽措爤锟?靹滊矂臧€ 牍勳柎 鞛堨姷雼堧嫟.",
+                "rooms-list-title": "頇滌劚 毽措爤锟?锟?氇╇",
+                "th-room-name": "锟?ID",
+                "th-peer-count": "鞐瓣舶 頂检柎 锟?,
+                "th-actions": "鞛戩梾",
+                "btn-close": "雼赴",
+                "th-peer-id": "頂检柎 ID",
+                "th-virtual-ip": "臧€锟?IP",
+                "th-hostname": "順胳姢锟?鞚措",
+                "th-version": "氩勳爠",
+                "th-rx-tx": "靾橃嫚 / 靻§嫚 韸鸽灅锟?,
+                "th-conn-time": "鞐瓣舶 鞁滉皠",
+                "tokens-title": "韥措澕鞚挫柛锟?鞐瓣舶 韱犿伆",
+                "btn-gen-token": "韱犿伆 靸濎劚",
+                "th-token": "韱犿伆",
+                "th-desc": "靹る獏",
+                "th-created": "靸濎劚锟?,
+                "settings-general": "鞚茧皹 靹れ爼",
+                "set-req-token-title": "鞐瓣舶 韱犿伆 頃勳垬 瓴€锟?,
+                "set-req-token-desc": "EasyTier 韥措澕鞚挫柛韸戈皜 鞐瓣舶锟?锟?鞙犿毃锟?token 毵り皽氤€靾橂ゼ 鞝勳啞頃橂弰锟?臧曥牅頃╇媹锟?",
+                "settings-admin-pass": "甏€毽瀽 牍勲皜氩堩樃 氤€锟?,
+                "set-new-pass": "锟?牍勲皜氩堩樃",
+                "btn-save": "牍勲皜氩堩樃 鞝€锟?,
+                "btn-cancel": "旆唽",
+                "btn-confirm": "頇曥澑",
+                "alert-security-title": "氤挫晥 瓴疥碃: ",
+                "alert-security-desc": "旮半掣 甏€毽瀽 牍勲皜氩堩樃 'admin'锟?靷毄頃橁碃 鞛堨姷雼堧嫟. 歆€锟?氚旊 氤€瓴巾晿鞁嫓锟?",
+                "action-view": "頂检柎 氇╇",
+                "action-kick": "於旊癌",
+                "action-ban": "彀嫧 氇╇",
+                "action-delete": "靷牅",
+                "msg-changed-pass": "牍勲皜氩堩樃臧€ 靹标车鞝侅溂锟?氤€瓴诫悩鞐堨姷雼堧嫟!",
+                "msg-gen-success": "韱犿伆锟?靸濎劚霅橃棃鞀惦媹锟?",
+                "msg-kicked-success": "頂检柎臧€ 靹标车鞝侅溂锟?於旊癌霅橃棃鞀惦媹锟?",
+                "msg-deleted-success": "韱犿伆锟?靷牅霅橃棃鞀惦媹锟?",
+                "set-pass-env-note": "甏€毽瀽 牍勲皜氩堩樃锟?Cloudflare Workers 雽€鞁滊炒霌滌潣 ADMIN_PASSWORD 頇橁步 氤€靾橂 靹れ爼頃╇媹锟? 氤€锟?靷暛鞚€ 鞛鞍锟?锟?鞝侅毄霅╇媹锟?"
             }
         };
 
@@ -1351,7 +1351,7 @@ export const serveAdminDashboard = `<!DOCTYPE html>
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
                 if (res.ok) {
-                showDashboard();
+                    showDashboard();
                 } else {
                     showLogin();
                 }
@@ -1375,7 +1375,7 @@ export const serveAdminDashboard = `<!DOCTYPE html>
                     localStorage.setItem('easytier_admin_token', token);
                     document.getElementById('passwordInput').value = '';
                     document.getElementById('loginError').style.display = 'none';
-                    verifyToken();
+                    await verifyToken();
                 } else {
                     document.getElementById('loginError').style.display = 'block';
                 }
@@ -1429,13 +1429,13 @@ export const serveAdminDashboard = `<!DOCTYPE html>
         function updateCountdownText() {
             const refreshText = document.getElementById('refreshText');
             if (currentLang === 'zh-CN') {
-                refreshText.innerText = \`自动刷新�?\${countdown} 秒内\`;
+                refreshText.innerText = \`鑷姩鍒锋柊锟?\${countdown} 绉掑唴\`;
             } else if (currentLang === 'zh-TW') {
-                refreshText.innerText = \`自動重新整理�?\${countdown} 秒內\`;
+                refreshText.innerText = \`鑷嫊閲嶆柊鏁寸悊锟?\${countdown} 绉掑収\`;
             } else if (currentLang === 'ja') {
-                refreshText.innerText = \`\${countdown}秒で自動更新\`;
+                refreshText.innerText = \`\${countdown}绉掋仹鑷嫊鏇存柊\`;
             } else if (currentLang === 'ko') {
-                refreshText.innerText = \`\${countdown}�?�?자동 새로고침\`;
+                refreshText.innerText = \`\${countdown}锟?锟?鞛愲彊 靸堧瓿犾龚\`;
             } else {
                 refreshText.innerText = \`Auto-refresh in \${countdown}s\`;
             }
@@ -1914,6 +1914,8 @@ export const serveAdminDashboard = `<!DOCTYPE html>
 </body>
 </html>
 `;
+
+
 
 
 
