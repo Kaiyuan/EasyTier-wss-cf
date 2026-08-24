@@ -217,15 +217,10 @@ export const dashboardScript = String.raw`
     if (typeof window.refreshTableLabels === 'function') window.refreshTableLabels();
   };
 
-  api.copyRoomWsUrl = async function copyRoomWsUrl(roomId) {
-    await api.ensureServerMeta();
-    const room = String(roomId || 'default').trim() || 'default';
-    let clientToken = '';
-    if (window.serverRequireToken) {
-      clientToken = prompt(translations[window.currentLang]['prompt-room-token'] || 'Client token (required)', '') || '';
-      if (!clientToken.trim()) return;
-    }
-    const wssUrl = api.buildClientWsUrl(room, clientToken.trim());
+  api.copyRoomWsUrl = async function copyRoomWsUrl() {
+    // EasyTier 客户端仅支持 scheme://host[:port]，房间/令牌无法通过 URL 携带；
+    // 真实客户端固定接入 default 房间，鉴权依赖网络名 + 密码（或网络白名单）。
+    const wssUrl = api.buildClientWsUrl();
     await api.copyWithToast(wssUrl, 'msg-copied');
   };
 

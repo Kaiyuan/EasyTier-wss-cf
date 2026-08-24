@@ -63,12 +63,9 @@ export function normalizeRouteInput(input, existing = null) {
   };
 }
 
-export function buildPublicWsUrl(origin, routeId, clientToken, wsPath = "ws") {
-  return buildEasyTierWsUrl(origin, {
-    room: routeId,
-    token: clientToken,
-    wsPath,
-  });
+export function buildPublicWsUrl(origin, _routeId, _clientToken, _wsPath = "ws") {
+  // EasyTier 客户端仅支持 scheme://host[:port]；房间/令牌无法通过 URL 携带。
+  return buildEasyTierWsUrl(origin);
 }
 
 function shellQuote(value) {

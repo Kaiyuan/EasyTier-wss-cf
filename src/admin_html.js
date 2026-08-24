@@ -389,7 +389,7 @@ ${buildAdminI18nScript()}
             // Show relay WSS URL in test card
             var urlDisplay = document.getElementById('wssTestUrl');
             if (urlDisplay && window.EasyTierAdmin && EasyTierAdmin.buildClientWsUrl) {
-                urlDisplay.textContent = 'Relay: ' + EasyTierAdmin.buildClientWsUrl('default', '');
+                urlDisplay.textContent = 'Relay: ' + EasyTierAdmin.buildClientWsUrl();
             }
         });
     
@@ -406,7 +406,9 @@ ${buildAdminI18nScript()}
             status.style.color = 'var(--warning)';
             
             try {
-                const wsUrl = EasyTierAdmin.buildClientWsUrl('wss-test');
+                // 浏览器 WebSocket 可以携带 query，用于连通性测试；
+                // 真实 EasyTier 客户端请使用不带 path/query 的裸地址。
+                const wsUrl = EasyTierAdmin.buildTestWsUrl('wss-test');
                 urlDisplay.textContent = wsUrl;
                 
                 const ws = new WebSocket(wsUrl);

@@ -97,23 +97,28 @@ export default {
     }
 
     // 5. WebSocket routing to EasyTier peer rooms
-    const wsPath = '/' + (env.WS_PATH || 'ws');
-    if (pathname === '/' || pathname === wsPath || pathname === wsPath + '/') {
-      if (request.headers.get('Upgrade') !== 'websocket') {
-        return new Response('Expected WebSocket upgrade', { status: 400 });
+    // EasyTier 客户端的 peer URL 只支持 scheme://host[:port]：path 与 query
+    // 都不会到达服务端（tokio-websockets 握手只发送 uri.path()）。
+    // 因此任何路径上的 WebSocket 升级都转发给房间 DO（房间由 ?room= 指定，
+    // 真实客户端缺省落在 default 房间）；非升级请求按常规页面处理。
+    const isWsUpgrade = (request.headers.get('Upgrade') || '').toLowerCase() === 'websocket';
+    if (!isWsUpgrade) {
+      if (pathname === '/') {
+        return Response.redirect(url.origin + '/panel', 302);
       }
-
-      const roomId = url.searchParams.get('room') || 'default';
-
-      // Prevent clients from connecting directly to the directory room as a peer
-      if (roomId === '__directory__') {
-        return new Response('Invalid room name', { status: 400 });
-      }
-
-      const options = env.LOCATION_HINT ? { locationHint: env.LOCATION_HINT } : {};
-      const roomStub = env.RELAY_ROOM.get(env.RELAY_ROOM.idFromName(roomId), options);
-      return roomStub.fetch(request);
+      return new Response('Not found', { status: 404 });
     }
+
+    const roomId = url.searchParams.get('room') || 'default';
+
+    // Prevent clients from connecting directly to the directory room as a peer
+    if (roomId === '__directory__') {
+      return new Response('Invalid room name', { status: 400 });
+    }
+
+    const options = env.LOCATION_HINT ? { locationHint: env.LOCATION_HINT } : {};
+    const roomStub = env.RELAY_ROOM.get(env.RELAY_ROOM.idFromName(roomId), options);
+    return roomStub.fetch(request);
 
     // 6. Fallback 404
     return new Response('Not found', { status: 404 });

@@ -10,7 +10,6 @@ import { persistWebSocketAttachment } from './core/ws_attachment.js';
 import {
   buildEasyTierWsUrl,
   buildEasyTierCoreCommand,
-  mergeEasyTierWsUrl,
 } from '../ws_url.js';
 import { sanitizeConfigForPublic } from '../config_public.js';
 
@@ -176,16 +175,23 @@ export class RelayRoom {
       });
     }
 
+    if (url.pathname === '/api/internal/policy') {
+      const config = (await this.state.storage.get('config')) ?? {};
+      const configs = Array.isArray(config.easyTierConfigs) ? config.easyTierConfigs : [];
+      return new Response(JSON.stringify({
+        requireToken: !!config.requireToken,
+        easyTierConfigCount: configs.length,
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+
     // 4. Admin API endpoints (when handled by directory DO)
     if (url.pathname.startsWith('/api/')) {
       return await this._handleAdminApi(request);
     }
 
     // 5. WebSocket upgrade handling
-    const wsPath = '/' + (this.env.WS_PATH || 'ws');
-    if (url.pathname !== wsPath && url.pathname !== wsPath + '/') {
-      return new Response('Not found', { status: 404 });
-    }
+    // EasyTier 客户端的 peer URL 只支持 scheme://host[:port]（path/query 不会到达
+    // 服务端），因此不再校验具体路径，任何非 /api 路径的升级请求都视为对等节点接入。
     if (request.headers.get('Upgrade') !== 'websocket') {
       return new Response('Expected websocket', { status: 400 });
     }
@@ -193,14 +199,33 @@ export class RelayRoom {
     // Client connection verification
     const roomId = url.searchParams.get('room') || 'default';
     if (roomId !== '__directory__') {
-      const clientToken = url.searchParams.get('token') || url.searchParams.get('client_token') || '';
       const dirStub = this.env.RELAY_ROOM.get(this.env.RELAY_ROOM.idFromName('__directory__'));
-      // Always verify: the directory DO allows everyone when requireToken is off,
-      // and rejects empty/invalid tokens when enforcement is enabled.
-      const verifyRes = await dirStub.fetch(new Request(`http://localhost/api/internal/verify-token?token=${encodeURIComponent(clientToken)}`));
-      if (!verifyRes.ok) {
-        return new Response('Unauthorized: connection token required or invalid', { status: 401 });
+      const clientToken = url.searchParams.get('token') || url.searchParams.get('client_token') || '';
+
+      // 真实 EasyTier 客户端无法通过 URL 携带令牌：
+      // - 显式携带 token 时照常校验（浏览器 / 脚本测试场景）
+      // - 未携带 token 且开启强制令牌时：若已配置网络白名单，推迟到握手阶段用
+      //   network_name + digest 校验；否则没有任何可用鉴权手段，直接拒绝。
+      let requireToken = false;
+      let easyTierConfigCount = 0;
+      try {
+        const policyRes = await dirStub.fetch(new Request('http://localhost/api/internal/policy'));
+        const policyData = await policyRes.json();
+        requireToken = !!(policyData && policyData.requireToken);
+        easyTierConfigCount = policyData && Number(policyData.easyTierConfigCount) || 0;
+      } catch (_) {}
+
+      if (clientToken) {
+        // Always verify explicit tokens: the directory DO allows everyone when
+        // requireToken is off, and rejects empty/invalid tokens when enabled.
+        const verifyRes = await dirStub.fetch(new Request(`http://localhost/api/internal/verify-token?token=${encodeURIComponent(clientToken)}`));
+        if (!verifyRes.ok) {
+          return new Response('Unauthorized: connection token invalid', { status: 401 });
+        }
+      } else if (requireToken && easyTierConfigCount === 0) {
+        return new Response('Unauthorized: client token required. Note: EasyTier clients cannot send tokens via URL — configure an EasyTier network whitelist instead.', { status: 401 });
       }
+      // (无 token + 强制令牌 + 已配置网络白名单) → 握手阶段 verify-network 兜底鉴权
 
       // Register room in directory
       this.state.waitUntil(
@@ -511,11 +536,8 @@ export class RelayRoom {
 
       let wssUrl = null;
       try {
-        wssUrl = buildEasyTierWsUrl(requestPublicOrigin(request), {
-          room: roomId,
-          token,
-          wsPath: this.env.WS_PATH || 'ws',
-        });
+        // EasyTier 客户端仅支持 scheme://host[:port]（path/query 不生效）
+        wssUrl = buildEasyTierWsUrl(requestPublicOrigin(request));
       } catch (_) {}
 
       return new Response(JSON.stringify({ ...newToken, wssUrl }), {
@@ -542,9 +564,6 @@ export class RelayRoom {
     // 7. GET /api/ws-url -> build client WSS URL (admin)
     if (path === '/api/ws-url' && method === 'GET') {
       const origin = url.searchParams.get('origin') || '';
-      const room = url.searchParams.get('room') || 'default';
-      const token = url.searchParams.get('token') || '';
-      const wsPath = this.env.WS_PATH || 'ws';
       if (!origin) {
         return new Response(JSON.stringify({ error: 'origin query parameter is required' }), {
           status: 400,
@@ -552,10 +571,11 @@ export class RelayRoom {
         });
       }
       try {
-        const wssUrl = buildEasyTierWsUrl(origin, { room, token, wsPath });
+        // EasyTier 客户端仅支持 scheme://host[:port]（path/query 不生效）
+        const wssUrl = buildEasyTierWsUrl(origin);
         const networkName = url.searchParams.get('networkName') || '';
         const networkSecret = url.searchParams.get('networkSecret') || '';
-        const payload = { wssUrl, wsPath };
+        const payload = { wssUrl };
         if (networkName || networkSecret) {
           payload.easyTierCommand = buildEasyTierCoreCommand(wssUrl, networkName, networkSecret);
         }

@@ -181,26 +181,31 @@ Durable Object 默认会根据请求来源自动选择最近的地区部署。�
 
 ## 客户端连接说明（WSS 节点）
 
-部署后，EasyTier 客户端通过 **对等节点（peer）** 连接本中继，地址格式如下：
+> **重要：EasyTier 客户端的 peer URL 只支持 `scheme://host[:port]`。**
+> path 与查询参数都不会到达服务端：客户端建立 WebSocket 时只发送 `uri.path()`
+> （tokio-websockets 的已知行为，query 被丢弃），因此**不要**在地址中写
+> `/ws?room=...&token=...` 之类的后缀——写了也无效。
 
-| 参数 | 说明 |
-|------|------|
-| 路径 | `/{WS_PATH}`，默认 `/ws`，可在 `wrangler.toml` 的 `WS_PATH` 修改 |
-| `room` | 房间 ID，同一房间内的节点可互相发现与转发，默认 `default` |
-| `token` | 客户端连接令牌；在管理后台开启「强制令牌」后必填 |
+部署后，EasyTier 客户端通过 **对等节点（peer）** 连接本中继：
 
-EasyTier 客户端对 **显式端口原样拨号**（v2.x 的 `dns.rs` 有回归测试确认，`:0` 会直接连接端口 0 导致失败）。因此地址中**不要写任何端口**，省略时客户端自动使用协议默认端口（`ws`→80，`wss`→443），这也是 Cloudflare Workers 仅支持的标准端口。
+- 服务端接受**任意路径**上的 WebSocket 升级，裸地址 `wss://域名` 直接可用；
+- 真实 EasyTier 客户端固定接入 `default` 房间；`?room=` 参数仅对浏览器 /
+  测试工具等能携带 query 的客户端生效（用于面板的连通性测试）；
+- EasyTier 客户端对 **显式端口原样拨号**（v2.x 的 `dns.rs` 有回归测试确认，
+  `:0` 会直接连接端口 0 导致失败）。协议默认端口应省略
+  （`ws`→80，`wss`→443，也是 Cloudflare Workers 仅支持的标准端口），
+  非默认端口（如本地开发 `:8787`）可显式书写。
 
 **开发环境示例：**
 
 ```text
-ws://127.0.0.1:8787/ws?room=my_net&token=你的客户端令牌
+ws://127.0.0.1:8787
 ```
 
 **生产环境示例：**
 
 ```text
-wss://your-deployment.workers.dev/ws?room=my_net&token=你的客户端令牌
+wss://your-deployment.workers.dev
 ```
 
 绑定自定义域名时，将主机名替换为你的域名即可。
@@ -208,10 +213,19 @@ wss://your-deployment.workers.dev/ws?room=my_net&token=你的客户端令牌
 **easytier-core 命令示例：**
 
 ```bash
-easytier-core --network-name '你的网络名' --network-secret '你的密钥' -p 'wss://your-domain/ws?room=my_net&token=你的令牌'
+easytier-core --network-name '你的网络名' --network-secret '你的密钥' -p 'wss://your-domain'
 ```
 
-管理后台「EasyTier 节点配置」页可保存上述地址，并在填写网络名/密钥后一键复制完整 CLI 命令。创建客户端令牌后也会提示带 `room=default` 的示例 WSS 地址。
+### 鉴权说明
+
+- **网络白名单（推荐）**：管理后台「EasyTier 节点配置」中保存网络名 +
+  密钥后，握手阶段会校验 `network_name` 与密钥摘要，未配置的网络将被拒绝。
+- **强制令牌**：开启后，显式携带 `?token=` 的连接（浏览器/脚本）照常校验。
+  由于真实 EasyTier 客户端无法通过 URL 携带令牌：
+  - 已配置网络白名单时 → 无 token 连接推迟到握手阶段按网络白名单鉴权；
+  - 未配置白名单时 → 无 token 连接一律拒绝（401）。
+- 管理后台「EasyTier 节点配置」页可保存地址并在填写网络名/密钥后一键复制
+  CLI 命令；创建客户端令牌后会展示对应的示例 WSS 地址。
 
 ## 贡献
 

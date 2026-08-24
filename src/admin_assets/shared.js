@@ -91,15 +91,26 @@ export const sharedScript = String.raw`
     }
   };
 
-  api.buildClientWsUrl = function buildClientWsUrl(roomId, clientToken) {
-    const wsPath = api.getWsPath().replace(/^\/+/, '').replace(/\/+$/, '') || 'ws';
+  // EasyTier 客户端的 peer URL 只支持 scheme://host[:port]：
+  // path 与 query 都不会到达服务端，房间/令牌无法通过 URL 参数传递。
+  api.buildClientWsUrl = function buildClientWsUrl() {
     const url = new URL(location.origin);
-    url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+    const proto = url.protocol === 'https:' ? 'wss:' : 'ws:';
+    // 不要设置显式默认端口：EasyTier 省略端口时自动使用协议默认端口（ws→80, wss→443）
+    const isDefaultPort =
+      (proto === 'ws:' && url.port === '80') || (proto === 'wss:' && url.port === '443');
+    const port = url.port && !isDefaultPort ? ':' + url.port : '';
+    return proto + '//' + url.hostname + port;
+  };
+
+  // 浏览器连通性测试专用：浏览器 WebSocket 可以携带 path/query，
+  // 用于在面板里验证中继可用性（与真实 EasyTier 客户端行为不同）。
+  api.buildTestWsUrl = function buildTestWsUrl(roomId, clientToken) {
+    const wsPath = api.getWsPath().replace(/^\/+/, '').replace(/\/+$/, '') || 'ws';
+    const url = new URL(api.buildClientWsUrl());
     url.pathname = '/' + wsPath;
     url.search = '';
     url.hash = '';
-    // 不要设置显式端口：EasyTier v2.x 会原样拨号 ":0" 导致连接失败，
-    // 省略端口时客户端自动使用协议默认端口（ws→80, wss→443）。
     url.searchParams.set('room', String(roomId || 'default').trim() || 'default');
     if (clientToken && clientToken.trim()) {
       url.searchParams.set('token', clientToken.trim());

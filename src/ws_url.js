@@ -1,6 +1,11 @@
 /**
- * 构建 EasyTier 客户端使用的 WSS 对等节点地址。
- * 协议约定：路径为 /{WS_PATH}，查询参数 room、token（或 client_token）。
+ * 构建 EasyTier 客户端使用的对等节点地址。
+ *
+ * 重要约束：EasyTier 客户端的 peer URL 只支持 scheme://host[:port]
+ * - 显式端口会被原样拨号（":0" 会连接端口 0 导致失败），协议默认端口必须省略（ws→80, wss→443）
+ * - path 与 query 不会到达服务端：tokio-websockets 的握手请求只发送 uri.path()
+ *   （query 被丢弃），部分旧版本连自定义 path 都不支持。
+ *   因此房间与令牌无法通过 URL 参数传递给真实客户端。
  */
 
 export function normalizeWsPath(wsPath) {
@@ -10,41 +15,31 @@ export function normalizeWsPath(wsPath) {
 
 /**
  * @param {string} originOrBase - 完整 URL 或 host（如 https://example.com 或 wss://example.com/ws）
- * @param {{ room?: string, token?: string, clientToken?: string, wsPath?: string }} options
+ *   多余的 path/query/hash 会被剥离，只保留 scheme://host[:port]。
  */
-export function buildEasyTierWsUrl(originOrBase, options = {}) {
-  const roomId = String(options.room ?? '').trim() || 'default';
-  const token = String(options.token ?? options.clientToken ?? '').trim();
-  const wsPath = normalizeWsPath(options.wsPath);
-
-  let url;
+export function buildEasyTierWsUrl(originOrBase, _options = {}) {
   const base = String(originOrBase ?? '').trim();
   if (!base) {
     throw new Error('originOrBase is required');
   }
+  let url;
   if (base.includes('://')) {
     url = new URL(base);
   } else {
     url = new URL(`wss://${base.replace(/^\/+/, '')}`);
   }
 
-  if (url.protocol === 'http:') url.protocol = 'ws:';
-  else if (url.protocol === 'https:') url.protocol = 'wss:';
+  let protocol = url.protocol;
+  if (protocol === 'http:') protocol = 'ws:';
+  else if (protocol === 'https:') protocol = 'wss:';
 
-  url.pathname = `/${wsPath}`;
-  url.search = '';
-  url.hash = '';
+  // 省略协议默认端口；其他端口保留显式形式（客户端会原样拨号）
+  const isDefaultPort =
+    (protocol === 'ws:' && url.port === '80') ||
+    (protocol === 'wss:' && url.port === '443');
+  const port = url.port && !isDefaultPort ? `:${url.port}` : '';
 
-  url.searchParams.set('room', roomId);
-  if (token) {
-    url.searchParams.set('token', token);
-  }
-
-  // 注意：不要写显式端口（尤其不能写 :0）。
-  // EasyTier v2.x 对显式端口原样拨号（dns.rs 回归测试确认 ":0" 会连接端口 0 导致失败），
-  // 省略端口时客户端才使用协议默认端口（ws→80, wss→443）。
-
-  return url.toString();
+  return `${protocol}//${url.hostname}${port}`;
 }
 
 function shellQuote(value) {
@@ -69,18 +64,9 @@ export function buildEasyTierCoreCommand(peerUrl, networkName, networkSecret) {
 }
 
 /**
- * 从已有 WSS URL 解析 room / token，并与新参数合并后重新生成。
+ * 从已有 WSS URL 中提取裸地址（scheme://host[:port]），丢弃 path/query/hash。
+ * 兼容旧格式地址（含 room/token 参数）的迁移场景。
  */
-export function mergeEasyTierWsUrl(existingUrl, overrides = {}) {
-  const url = new URL(existingUrl);
-  const wsPath = normalizeWsPath(url.pathname.replace(/^\//, ''));
-  const room = overrides.room ?? url.searchParams.get('room') ?? 'default';
-  const token =
-    overrides.token ??
-    overrides.clientToken ??
-    url.searchParams.get('token') ??
-    url.searchParams.get('client_token') ??
-    '';
-  const origin = `${url.protocol}//${url.hostname}${url.port ? `:${url.port}` : ''}`;
-  return buildEasyTierWsUrl(origin, { room, token, clientToken: token, wsPath });
+export function mergeEasyTierWsUrl(existingUrl, _overrides = {}) {
+  return buildEasyTierWsUrl(existingUrl);
 }
