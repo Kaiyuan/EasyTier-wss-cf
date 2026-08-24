@@ -28,8 +28,8 @@
 
 1. 克隆项目仓库：
 ```bash
-git clone <your-repo-url>
-cd easytier-ws-relay
+git clone https://github.com/Kaiyuan/EasyTier-wss-cf.git
+cd EasyTier-wss-cf
 ```
 
 2. 安装依赖：
