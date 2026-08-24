@@ -388,8 +388,8 @@ ${buildAdminI18nScript()}
             setupTableLabels();
             // Show relay WSS URL in test card
             var urlDisplay = document.getElementById('wssTestUrl');
-            if (urlDisplay) {
-                urlDisplay.textContent = 'Relay: wss://' + window.location.host + ':443';
+            if (urlDisplay && window.EasyTierAdmin && EasyTierAdmin.buildClientWsUrl) {
+                urlDisplay.textContent = 'Relay: ' + EasyTierAdmin.buildClientWsUrl('default', '');
             }
         });
     

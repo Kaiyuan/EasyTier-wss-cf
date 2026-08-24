@@ -2,7 +2,7 @@ import { MY_PEER_ID, PacketType } from './constants.js';
 import { createHeader } from './packet.js';
 import { getPeerManager } from './peer_manager.js';
 import { wrapPacket, randomU64String, sha256 } from './crypto.js';
-import { gzipMaybe, gunzipMaybe, isCompressionAvailable } from './compress.js';
+import { gunzipMaybe, isCompressionAvailable } from './compress.js';
 import { loadProtos } from './protos.js';
 
 // Helper to convert transactionId to proper format for protobuf int64
@@ -133,20 +133,14 @@ function sendRpcResponse(ws, toPeerId, reqRpcPacket, types, responseBodyBytes) {
     console.error(`sendRpcResponse aborted: socket not open (readyState=${ws ? ws.readyState : 'nil'}) toPeer=${toPeerId}`);
     return;
   }
-  const compressEnabled = process.env.EASYTIER_COMPRESS_RPC !== '0';
-  let responseBody = responseBodyBytes;
-  let compressionInfo = { algo: 1, acceptedAlgo: 1 };
-  if (compressEnabled && responseBodyBytes && responseBodyBytes.length > 256 && isCompressionAvailable()) {
-    try {
-      responseBody = gzipMaybe(responseBodyBytes);
-      compressionInfo = { algo: 2, acceptedAlgo: 1 };
-    } catch (e) {
-      console.warn(`Compress rpc response failed: ${e.message}`);
-    }
-  }
+  // 压缩策略：始终发送未压缩数据（algo=None）。
+  // EasyTier 的 CompressionAlgoPb::Zstd(2) 表示 zstd；此前这里用 zlib(gzip) 压缩却标记为
+  // Zstd，客户端按 zstd 解压必然失败，导致路由同步超时。Workers 运行时无原生 zstd，
+  // 因此不做响应压缩；accepted_algo 也宣告 None，告知对端不要向我们发送压缩包。
+  const compressionInfo = { algo: 1, acceptedAlgo: 1 };
 
   const rpcResponsePayload = {
-    response: responseBody,
+    response: responseBodyBytes,
     error: null,
     runtimeUs: 0,
   };

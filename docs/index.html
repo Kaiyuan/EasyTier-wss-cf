@@ -463,7 +463,7 @@
                         <h4 data-i18n="step3-title">Connect Client</h4>
                         <p data-i18n="step3-desc">Specify the WSS address as a peer in your EasyTier configuration. Use the default room or create a custom one.</p>
                         <div class="code-block">
-                            <span class="code-text" id="codeText">wss://your-deployment.workers.dev:0/ws?room=my_network</span>
+                            <span class="code-text" id="codeText">wss://your-deployment.workers.dev/ws?room=my_network</span>
                             <button class="copy-btn" onclick="copyCode()">
                                 <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
                                 <span data-i18n="copy">Copy</span>
@@ -677,8 +677,8 @@
             }
             
             const protocol = host.includes('localhost') ? 'ws' : 'wss';
-            const port = host.includes('localhost') ? '' : ':0';
-            document.getElementById('codeText').innerText = `${protocol}://${host}${port}/ws?room=my_network`;
+            // 不要添加显式端口（尤其不能写 ":0"）：EasyTier v2.x 会原样拨号该端口导致连接失败
+            document.getElementById('codeText').innerText = `${protocol}://${host}/ws?room=my_network`;
         }
 
         function copyCode() {

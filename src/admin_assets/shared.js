@@ -98,7 +98,12 @@ export const sharedScript = String.raw`
     url.pathname = '/' + wsPath;
     url.search = '';
     url.hash = '';
-    url.port = '0';
+    // 不要设置显式端口：EasyTier v2.x 会原样拨号 ":0" 导致连接失败，
+    // 省略端口时客户端自动使用协议默认端口（ws→80, wss→443）。
+    url.searchParams.set('room', String(roomId || 'default').trim() || 'default');
+    if (clientToken && clientToken.trim()) {
+      url.searchParams.set('token', clientToken.trim());
+    }
     return url.toString();
   };
 
@@ -180,6 +185,7 @@ export const sharedScript = String.raw`
       }, 50);
     }
     api.loadStats && api.loadStats();
+    api.loadEasyTierConfigs && api.loadEasyTierConfigs();
     api.startPolling && api.startPolling();
   };
 })();

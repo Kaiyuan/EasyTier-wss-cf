@@ -87,7 +87,7 @@ wrangler deploy
 |------|------|--------|
 | `WS_PATH` | WebSocket 路径 | `ws` |
 | `EASYTIER_DISABLE_RELAY` | `"1"` 开启纯 P2P 模式 | `"0"` |
-| `EASYTIER_COMPRESS_RPC` | `"0"` 关闭 RPC 压缩（调试用） | `"1"` |
+| `EASYTIER_COMPRESS_RPC` | 已废弃：RPC 不再压缩（Workers 无原生 zstd，压缩会导致客户端解压失败） | `"1"` |
 | `LOCATION_HINT` | Durable Object 地区，见下表 | `"apac"` |
 | `ADMIN_PASSWORD` | **管理后台登录密码**（见下方说明） | `"changeme"` |
 
@@ -153,7 +153,7 @@ easytier-ws-relay/
 
 在 `wrangler.toml` 的 `[vars]` 中配置：
 - `EASYTIER_DISABLE_RELAY`: `"1"` 开启纯 P2P，默认 `"0"`
-- `EASYTIER_COMPRESS_RPC`: `"0"` 关闭 RPC 压缩（调试用），默认 `"1"`
+- `EASYTIER_COMPRESS_RPC`: 已废弃（服务端始终以未压缩方式发送 RPC，并告知对端勿压缩）
 
 修改完配置后按正常方式运行 `wrangler dev` 或部署即可生效。
 
@@ -189,7 +189,7 @@ Durable Object 默认会根据请求来源自动选择最近的地区部署。�
 | `room` | 房间 ID，同一房间内的节点可互相发现与转发，默认 `default` |
 | `token` | 客户端连接令牌；在管理后台开启「强制令牌」后必填 |
 
-EasyTier 使用端口 `0` 表示协议默认端口（`ws`→80，`wss`→443）。
+EasyTier 客户端对 **显式端口原样拨号**（v2.x 的 `dns.rs` 有回归测试确认，`:0` 会直接连接端口 0 导致失败）。因此地址中**不要写任何端口**，省略时客户端自动使用协议默认端口（`ws`→80，`wss`→443），这也是 Cloudflare Workers 仅支持的标准端口。
 
 **开发环境示例：**
 
@@ -200,7 +200,7 @@ ws://127.0.0.1:8787/ws?room=my_net&token=你的客户端令牌
 **生产环境示例：**
 
 ```text
-wss://your-deployment.workers.dev:0/ws?room=my_net&token=你的客户端令牌
+wss://your-deployment.workers.dev/ws?room=my_net&token=你的客户端令牌
 ```
 
 绑定自定义域名时，将主机名替换为你的域名即可。
@@ -208,7 +208,7 @@ wss://your-deployment.workers.dev:0/ws?room=my_net&token=你的客户端令牌
 **easytier-core 命令示例：**
 
 ```bash
-easytier-core --network-name '你的网络名' --network-secret '你的密钥' -p 'wss://your-domain:0/ws?room=my_net&token=你的令牌'
+easytier-core --network-name '你的网络名' --network-secret '你的密钥' -p 'wss://your-domain/ws?room=my_net&token=你的令牌'
 ```
 
 管理后台「EasyTier 节点配置」页可保存上述地址，并在填写网络名/密钥后一键复制完整 CLI 命令。创建客户端令牌后也会提示带 `room=default` 的示例 WSS 地址。

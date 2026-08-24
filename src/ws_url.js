@@ -40,10 +40,9 @@ export function buildEasyTierWsUrl(originOrBase, options = {}) {
     url.searchParams.set('token', token);
   }
 
-  // EasyTier 使用 :0 表示协议默认端口（wss → 443）
-  if (!url.port && (url.protocol === 'wss:' || url.protocol === 'ws:')) {
-    url.port = '0';
-  }
+  // 注意：不要写显式端口（尤其不能写 :0）。
+  // EasyTier v2.x 对显式端口原样拨号（dns.rs 回归测试确认 ":0" 会连接端口 0 导致失败），
+  // 省略端口时客户端才使用协议默认端口（ws→80, wss→443）。
 
   return url.toString();
 }
