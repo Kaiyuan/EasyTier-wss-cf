@@ -11,10 +11,10 @@ export function sanitizeConfigForPublic(config) {
   };
   if (Array.isArray(config.easyTierConfigs)) {
     safe.easyTierConfigs = config.easyTierConfigs.map((entry) => {
-      const { network_secret, ...rest } = entry;
+      const { network_secret, networkSecret, ...rest } = entry;
       return {
         ...rest,
-        hasNetworkSecret: Boolean(network_secret),
+        hasNetworkSecret: Boolean(network_secret || networkSecret),
       };
     });
   }

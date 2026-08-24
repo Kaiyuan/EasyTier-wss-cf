@@ -35,6 +35,11 @@ export function buildEasyTierWsUrl(originOrBase, options = {}) {
   url.search = '';
   url.hash = '';
 
+  url.searchParams.set('room', roomId);
+  if (token) {
+    url.searchParams.set('token', token);
+  }
+
   // EasyTier 使用 :0 表示协议默认端口（wss → 443）
   if (!url.port && (url.protocol === 'wss:' || url.protocol === 'ws:')) {
     url.port = '0';

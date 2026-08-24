@@ -195,11 +195,11 @@ export class RelayRoom {
     if (roomId !== '__directory__') {
       const clientToken = url.searchParams.get('token') || url.searchParams.get('client_token') || '';
       const dirStub = this.env.RELAY_ROOM.get(this.env.RELAY_ROOM.idFromName('__directory__'));
-      if (clientToken) {
-        const verifyRes = await dirStub.fetch(new Request(`http://localhost/api/internal/verify-token?token=${encodeURIComponent(clientToken)}`));
-        if (!verifyRes.ok) {
-          return new Response('Unauthorized: connection token required or invalid', { status: 401 });
-        }
+      // Always verify: the directory DO allows everyone when requireToken is off,
+      // and rejects empty/invalid tokens when enforcement is enabled.
+      const verifyRes = await dirStub.fetch(new Request(`http://localhost/api/internal/verify-token?token=${encodeURIComponent(clientToken)}`));
+      if (!verifyRes.ok) {
+        return new Response('Unauthorized: connection token required or invalid', { status: 401 });
       }
 
       // Register room in directory
