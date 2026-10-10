@@ -24,6 +24,7 @@ export const sharedScript = String.raw`
   };
 
   api.updateLanguagePickerLabels = function updateLanguagePickerLabels() {
+    if (typeof languageNames === 'undefined') return;
     document.querySelectorAll('.top-lang-select option').forEach((option) => {
       const label = languageNames[option.value];
       if (label) option.textContent = label;
@@ -31,7 +32,9 @@ export const sharedScript = String.raw`
   };
 
   api.updateLoginUI = function updateLoginUI() {
+    if (typeof loginCopy === 'undefined') return;
     const copy = loginCopy[window.currentLang] || loginCopy.en;
+    if (!copy) return;
     const loginTitle = document.getElementById('loginTitle');
     const loginHint = document.getElementById('loginHint');
     const passwordLabel = document.querySelector('label[for="passwordInput"]');
@@ -54,6 +57,13 @@ export const sharedScript = String.raw`
   api.updateCountdownText = function updateCountdownText() {
     const refreshText = document.getElementById('refreshText');
     if (!refreshText) return;
+    if (window.isPollingPaused) {
+      refreshText.innerText = window.currentLang === 'zh-CN' ? '已暂停' :
+        window.currentLang === 'zh-TW' ? '已暫停' :
+        window.currentLang === 'ja' ? '一時停止' :
+        window.currentLang === 'ko' ? '일시 중지됨' : 'Paused';
+      return;
+    }
     const text = window.currentLang === 'zh-CN' ? ('自动刷新 ' + window.countdown + ' 秒内') :
       window.currentLang === 'zh-TW' ? ('自動重新整理 ' + window.countdown + ' 秒內') :
       window.currentLang === 'ja' ? (window.countdown + '秒で自動更新') :
@@ -63,10 +73,10 @@ export const sharedScript = String.raw`
   };
 
   api.formatBytes = function formatBytes(bytes) {
-    if (!bytes) return '0 B';
+    if (!bytes || isNaN(bytes)) return '0 B';
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-    const index = Math.floor(Math.log(bytes) / Math.log(k));
+    const index = Math.min(sizes.length - 1, Math.floor(Math.log(bytes) / Math.log(k)));
     return parseFloat((bytes / Math.pow(k, index)).toFixed(2)) + ' ' + sizes[index];
   };
 
@@ -91,20 +101,15 @@ export const sharedScript = String.raw`
     }
   };
 
-  // EasyTier 客户端的 peer URL 只支持 scheme://host[:port]：
-  // path 与 query 都不会到达服务端，房间/令牌无法通过 URL 参数传递。
   api.buildClientWsUrl = function buildClientWsUrl() {
     const url = new URL(location.origin);
     const proto = url.protocol === 'https:' ? 'wss:' : 'ws:';
-    // 不要设置显式默认端口：EasyTier 省略端口时自动使用协议默认端口（ws→80, wss→443）
     const isDefaultPort =
       (proto === 'ws:' && url.port === '80') || (proto === 'wss:' && url.port === '443');
     const port = url.port && !isDefaultPort ? ':' + url.port : '';
     return proto + '//' + url.hostname + port;
   };
 
-  // 浏览器连通性测试专用：浏览器 WebSocket 可以携带 path/query，
-  // 用于在面板里验证中继可用性（与真实 EasyTier 客户端行为不同）。
   api.buildTestWsUrl = function buildTestWsUrl(roomId, clientToken) {
     const wsPath = api.getWsPath().replace(/^\/+/, '').replace(/\/+$/, '') || 'ws';
     const url = new URL(api.buildClientWsUrl());
@@ -129,21 +134,58 @@ export const sharedScript = String.raw`
   };
 
   api.t = function t(key, fallback) {
-    const pack = translations[window.currentLang] || translations.en || {};
-    return pack[key] || (translations.en && translations.en[key]) || fallback || '';
+    const pack = (typeof translations !== 'undefined' && translations[window.currentLang]) || (typeof translations !== 'undefined' && translations.en) || {};
+    return pack[key] || (typeof translations !== 'undefined' && translations.en && translations.en[key]) || fallback || '';
   };
 
   api.copyWithToast = async function copyWithToast(text, successKey) {
     const ok = await api.copyText(text);
-    if (ok && successKey && translations[window.currentLang] && translations[window.currentLang][successKey]) {
-      alert(translations[window.currentLang][successKey]);
+    if (ok) {
+      const msg = api.t(successKey || 'msg-copied', 'Copied to clipboard.');
+      api.showToast(msg);
     }
     return ok;
   };
 
+  api.showToast = function showToast(message) {
+    let toast = document.getElementById('adminToast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'adminToast';
+      toast.className = 'admin-toast';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.add('visible');
+    clearTimeout(api._toastTimer);
+    api._toastTimer = setTimeout(() => {
+      toast.classList.remove('visible');
+    }, 2400);
+  };
+
+  api.copyRelayUrl = async function copyRelayUrl() {
+    const url = api.buildClientWsUrl();
+    await api.copyWithToast(url, 'msg-copied');
+  };
+
+  api.toggleMobileSidebar = function toggleMobileSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.mobile-overlay');
+    if (sidebar) sidebar.classList.toggle('open');
+    if (overlay) overlay.classList.toggle('active');
+  };
+
+  api.closeMobileSidebar = function closeMobileSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.mobile-overlay');
+    if (sidebar) sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('active');
+  };
+
   api.updateUI = function updateUI() {
-    const t = translations[window.currentLang] || translations.en;
-    document.title = t['menu-overview'] + ' - EasyTier Admin';
+    if (typeof translations === 'undefined') return;
+    const t = translations[window.currentLang] || translations.en || {};
+    document.title = (t['menu-overview'] || 'Overview') + ' - EasyTier Relay Admin';
     document.querySelectorAll('[data-i18n]').forEach((el) => {
       const key = el.getAttribute('data-i18n');
       if (!t[key]) return;
@@ -172,6 +214,7 @@ export const sharedScript = String.raw`
     if (typeof window.refreshTableLabels === 'function') {
       window.refreshTableLabels();
     }
+    api.safeCreateIcons();
   };
 
   api.showLogin = function showLogin() {
@@ -195,9 +238,17 @@ export const sharedScript = String.raw`
         appLayout.style.opacity = 1;
       }, 50);
     }
+    
+    // Update relay url displays
+    const topRelayDisplay = document.getElementById('topRelayUrl');
+    if (topRelayDisplay) topRelayDisplay.textContent = api.buildClientWsUrl();
+    const wssTestUrl = document.getElementById('wssTestUrl');
+    if (wssTestUrl) wssTestUrl.textContent = 'Relay: ' + api.buildClientWsUrl();
+
     api.loadStats && api.loadStats();
     api.loadEasyTierConfigs && api.loadEasyTierConfigs();
     api.startPolling && api.startPolling();
+    api.safeCreateIcons();
   };
 })();
 `;

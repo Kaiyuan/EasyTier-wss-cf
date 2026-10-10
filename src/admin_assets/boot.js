@@ -1,14 +1,11 @@
 export const bootScript = String.raw`
 (function () {
-  // Defer initialization until shared.js is loaded
   function initializeApp() {
     window.EasyTierAdmin = window.EasyTierAdmin || {};
     const api = window.EasyTierAdmin;
 
-    // Check if api.updateUI exists (defined in shared.js)
     if (!api.updateUI) {
-      console.warn('Shared script not loaded yet, retrying...');
-      setTimeout(initializeApp, 100);
+      setTimeout(initializeApp, 50);
       return;
     }
 
@@ -54,10 +51,17 @@ export const bootScript = String.raw`
       api.showLogin();
     }
 
+    // Bind methods to window for HTML accessibility
     window.switchLanguage = api.switchLanguage;
     window.handleLogin = api.handleLogin;
     window.handleLogout = api.handleLogout;
     window.switchTab = api.switchTab;
+    window.togglePolling = api.togglePolling;
+    window.manualRefresh = api.manualRefresh;
+    window.copyRelayUrl = api.copyRelayUrl;
+    window.toggleMobileSidebar = api.toggleMobileSidebar;
+    window.closeMobileSidebar = api.closeMobileSidebar;
+
     window.loadEasyTierConfigs = api.loadEasyTierConfigs;
     window.openEasyTierConfigModal = api.openEasyTierConfigModal;
     window.closeEasyTierConfigModal = api.closeEasyTierConfigModal;
@@ -66,9 +70,18 @@ export const bootScript = String.raw`
     window.downloadEasyTierToml = api.downloadEasyTierToml;
     window.editEasyTierConfig = api.editEasyTierConfig;
     window.deleteEasyTierConfig = api.deleteEasyTierConfig;
+    window.previewEasyTierConfig = api.previewEasyTierConfig;
+    window.closeEasyTierPreviewModal = api.closeEasyTierPreviewModal;
+    window.copyPreviewToml = api.copyPreviewToml;
+    window.downloadPreviewToml = api.downloadPreviewToml;
+    window.duplicateEasyTierConfig = api.duplicateEasyTierConfig;
+    window.fillCurrentRelayIntoPeers = api.fillCurrentRelayIntoPeers;
+    window.toggleSecretVisibility = api.toggleSecretVisibility;
+    window.filterEasyTierConfigs = api.filterEasyTierConfigs;
+
+    window.closeRoomPeers = api.closeRoomPeers;
   }
 
-  // Use DOMContentLoaded to ensure all scripts are loaded
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeApp);
   } else {
