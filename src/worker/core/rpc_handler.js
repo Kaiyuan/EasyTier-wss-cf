@@ -171,7 +171,6 @@ function sendRpcResponse(ws, toPeerId, reqRpcPacket, types, responseBodyBytes) {
     txIdValue = String(txId);
     txIdType = typeof txId;
   }
-  console.log(`sendRpcResponse: transactionId=${txIdValue} (${txIdType}) raw=${JSON.stringify(txId)}`);
 
   // Convert transactionId to proper Long format for protobuf encoding
   const txIdForEncoding = toLongForProto(txId);
@@ -192,7 +191,6 @@ function sendRpcResponse(ws, toPeerId, reqRpcPacket, types, responseBodyBytes) {
   const buf = wrapPacket(createHeader, MY_PEER_ID, toPeerId, PacketType.RpcResp, rpcPacketBytes, ws);
   try {
     ws.send(buf);
-    console.log(`RpcResp -> to=${toPeerId} txLen=${buf.length} txTransaction=${txIdValue} SUCCESS`);
   } catch (e) {
     console.error(`sendRpcResponse to ${toPeerId} failed: ${e.message}`);
     // Re-throw to ensure caller knows the send failed
@@ -233,7 +231,6 @@ export function handleRpcReq(ws, header, payload, types) {
       txIdType = typeof txId;
       txIdDetails = '';
     }
-    console.log(`handleRpcReq: from=${header.fromPeerId} transactionId=${txIdValue} (${txIdType}) ${txIdDetails} raw=${JSON.stringify(txId)}`);
 
     if (rpcPacket.compressionInfo && rpcPacket.compressionInfo.algo > 1 && isCompressionAvailable()) {
       try {
@@ -331,7 +328,6 @@ export function handleRpcReq(ws, header, payload, types) {
 
 export function handleRpcResp(ws, header, payload, types) {
   try {
-    console.log(`RpcResp <- from=${header.fromPeerId} to=${header.toPeerId} len=${payload.length} packetType=${header.packetType} forwardCounter=${header.forwardCounter}`);
     const rpcPacket = types.RpcPacket.decode(payload);
 
     // Detailed logging for transactionId debugging
@@ -363,7 +359,6 @@ export function handleRpcResp(ws, header, payload, types) {
       txIdType = typeof txId;
       txIdDetails = '';
     }
-    console.log(`handleRpcResp: transactionId=${txIdValue} (${txIdType}) ${txIdDetails} raw=${JSON.stringify(txId)}`);
     if (rpcPacket.compressionInfo && rpcPacket.compressionInfo.algo > 1 && isCompressionAvailable()) {
       try {
         rpcPacket.body = gunzipMaybe(rpcPacket.body);
@@ -393,7 +388,6 @@ export function handleRpcResp(ws, header, payload, types) {
         const sessionId = resp && resp.sessionId ? resp.sessionId : null;
         if (sessionId && ws && ws.groupKey !== undefined) {
           pm().onRouteSessionAck(ws.groupKey, header.fromPeerId, sessionId, ws.weAreInitiator);
-          console.log(`RpcResp SyncRouteInfoResponse from=${header.fromPeerId} sessionId=${sessionId} acked`);
         }
       } catch (e) {
         console.error(`Decode SyncRouteInfoResponse failed from ${header.fromPeerId}: ${e.message}`);
@@ -406,7 +400,6 @@ export function handleRpcResp(ws, header, payload, types) {
       if (rpcResponseDecoded.error) {
         console.warn(`RpcResp error from ${header.fromPeerId}:`, rpcResponseDecoded.error);
       } else {
-        console.log(`RpcResp from=${header.fromPeerId} ok`);
       }
     }
   } catch (e) {
@@ -454,7 +447,6 @@ function handleSyncRouteInfo(ws, fromPeerId, reqRpcPacket, syncReq, types) {
   // This fixes the "sync_route_info failed timeout" error that prevents DO hibernation
   try {
     sendRpcResponse(ws, fromPeerId, reqRpcPacket, types, respBytes);
-    console.log(`Sent SyncRouteInfoResponse to peer ${fromPeerId}, transactionId=${reqRpcPacket.transactionId}`);
   } catch (e) {
     console.error(`CRITICAL: Failed to send SyncRouteInfoResponse to peer ${fromPeerId}: ${e.message}`);
     // Don't rethrow - we want the RPC to complete even if pushRouteUpdateTo fails
@@ -463,7 +455,6 @@ function handleSyncRouteInfo(ws, fromPeerId, reqRpcPacket, syncReq, types) {
   // After responding, push our current route info back to the requester (mirrors node behavior).
   try {
     pm().pushRouteUpdateTo(fromPeerId, ws, types, { forceFull: true });
-    console.log(`Successfully pushed route update to peer ${fromPeerId}`);
   } catch (e) {
     console.error(`Failed to push route update to peer ${fromPeerId}:`, e);
   }
@@ -471,7 +462,6 @@ function handleSyncRouteInfo(ws, fromPeerId, reqRpcPacket, syncReq, types) {
   if (hasNewPeers) {
     try {
       pm().broadcastRouteUpdate(types, groupKey, fromPeerId, { forceFull: true });
-      console.log(`Successfully broadcast route update for group ${groupKey}`);
     } catch (e) {
       console.error(`Failed to broadcast route update for group ${groupKey}:`, e);
     }

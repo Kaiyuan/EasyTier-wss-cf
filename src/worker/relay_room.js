@@ -35,9 +35,27 @@ export class RelayRoom {
     this.types = loadProtos();
     this.peerManager = getPeerManager();
     this.peerManager.setTypes(this.types);
+    // In-memory inbound byte counter. Persisted in batches (see _addInboundBytes):
+    // a storage read+write per relayed packet used to dominate CPU/duration cost.
+    this._bytesIn = null;
+    this._bytesInUnflushed = 0;
 
     // Restore sockets after hibernation to keep metadata
     this.state.getWebSockets().forEach((ws) => this._restoreSocket(ws));
+  }
+
+  _addInboundBytes(bytes) {
+    this._bytesIn = (this._bytesIn || 0) + bytes;
+    this._bytesInUnflushed += bytes;
+    if (this._bytesInUnflushed >= 65536) {
+      this._flushInboundBytes();
+    }
+  }
+
+  _flushInboundBytes() {
+    if (!this._bytesIn) return;
+    this._bytesInUnflushed = 0;
+    this.state.waitUntil(this.state.storage.put('bytesIn', this._bytesIn).catch(() => {}));
   }
 
   async fetch(request) {
@@ -67,6 +85,47 @@ export class RelayRoom {
         rooms.push({ roomId: networkName, peerCount: count });
       }
       return new Response(JSON.stringify({ rooms }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    // Return every active network WITH full peer details in a single response.
+    // The admin dashboard polls this once per refresh interval instead of one
+    // request per room (1 request total instead of 1+N).
+    if (url.pathname === '/api/internal/overview') {
+      const pm = this.peerManager;
+      const rooms = [];
+      let totalPeers = 0;
+      let totalRx = 0;
+      let totalTx = 0;
+      for (const [groupKey, peersMap] of pm.peersByGroup.entries()) {
+        const colonIdx = groupKey.indexOf(':');
+        const networkName = colonIdx >= 0 ? groupKey.slice(0, colonIdx) : groupKey;
+        const peerInfoMap = pm._getPeerInfosMap(groupKey);
+        const peers = [];
+        for (const [peerId, ws] of peersMap.entries()) {
+          const peerInfo = peerInfoMap?.get(peerId);
+          const ipv4Addr = peerInfo && peerInfo.ipv4Addr && typeof peerInfo.ipv4Addr.addr === 'number'
+            ? u32ToIp(peerInfo.ipv4Addr.addr)
+            : null;
+          const peer = {
+            peerId: ws.peerId || 'Unknown',
+            ipv4Addr: ipv4Addr || 'Pending',
+            hostname: ws.domainName || (peerInfo && peerInfo.hostname) || 'N/A',
+            easytierVersion: (peerInfo && peerInfo.easytierVersion) || 'cf-ws-relay',
+            rxBytes: ws.rxBytes || 0,
+            txBytes: ws.txBytes || 0,
+            connectedAt: ws.connectedAt || Date.now()
+          };
+          peers.push(peer);
+          totalRx += peer.rxBytes;
+          totalTx += peer.txBytes;
+        }
+        totalPeers += peers.length;
+        rooms.push({ roomId: networkName, peerCount: peers.length, peers });
+      }
+      return new Response(JSON.stringify({
+        rooms,
+        totals: { peers: totalPeers, rxBytes: totalRx, txBytes: totalTx }
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
     }
 
     // Return peers for a specific network name (used by admin stats API)
@@ -138,6 +197,39 @@ export class RelayRoom {
       return new Response('Unauthorized', { status: 401 });
     }
 
+    if (url.pathname === '/api/internal/prepare') {
+      // Single round trip for WebSocket upgrades: policy check + optional token
+      // verification + room registration (deduplicated storage write).
+      const config = (await this.state.storage.get('config')) ?? {};
+      const configs = Array.isArray(config.easyTierConfigs) ? config.easyTierConfigs : [];
+      const clientToken = url.searchParams.get('token') || '';
+      const requireToken = !!config.requireToken;
+
+      if (requireToken) {
+        if (clientToken) {
+          const tokens = (await this.state.storage.get('tokens')) ?? [];
+          if (!tokens.some(t => t.token === clientToken)) {
+            return new Response('Unauthorized', { status: 401 });
+          }
+        } else if (configs.length === 0) {
+          // Real EasyTier clients cannot send URL tokens; without a network
+          // whitelist there is no way to authenticate them.
+          return new Response('Unauthorized', { status: 401 });
+        }
+        // else: deferred to handshake-time verify-network check
+      }
+
+      const roomId = url.searchParams.get('room') || 'default';
+      const dir = (await this.state.storage.get('directory')) ?? {};
+      if (!dir[roomId]) {
+        dir[roomId] = { token: 'active', meta: {} };
+        await this.state.storage.put('directory', dir);
+      }
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200, headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
     // Verify EasyTier network handshake: checks networkName + digest against configured easyTierConfigs.
     // If no configs are configured, defaults to public relay mode (allow all).
     if (url.pathname === '/api/internal/verify-network') {
@@ -165,23 +257,12 @@ export class RelayRoom {
 
     // Internal stats (connections + bytes) for this DO instance
     if (url.pathname === '/api/internal/stats') {
-      const [connections, bytesIn] = await Promise.all([
-        this.state.storage.get('connections').catch(() => 0),
-        this.state.storage.get('bytesIn').catch(() => 0),
-      ]);
-      return new Response(JSON.stringify({ connections: connections ?? 0, bytesIn: bytesIn ?? 0 }), {
+      const connections = await this.state.storage.get('connections').catch(() => 0);
+      const bytesIn = this._bytesIn ?? (await this.state.storage.get('bytesIn').catch(() => 0)) ?? 0;
+      return new Response(JSON.stringify({ connections: connections ?? 0, bytesIn }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
       });
-    }
-
-    if (url.pathname === '/api/internal/policy') {
-      const config = (await this.state.storage.get('config')) ?? {};
-      const configs = Array.isArray(config.easyTierConfigs) ? config.easyTierConfigs : [];
-      return new Response(JSON.stringify({
-        requireToken: !!config.requireToken,
-        easyTierConfigCount: configs.length,
-      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
     }
 
     // 4. Admin API endpoints (when handled by directory DO)
@@ -199,42 +280,20 @@ export class RelayRoom {
     // Client connection verification
     const roomId = url.searchParams.get('room') || 'default';
     if (roomId !== '__directory__') {
-      const dirStub = this.env.RELAY_ROOM.get(this.env.RELAY_ROOM.idFromName('__directory__'));
+      // Single directory round trip: policy + optional token check + room
+      // registration (previously 2-3 separate DO requests per connection).
       const clientToken = url.searchParams.get('token') || url.searchParams.get('client_token') || '';
-
-      // 真实 EasyTier 客户端无法通过 URL 携带令牌：
-      // - 显式携带 token 时照常校验（浏览器 / 脚本测试场景）
-      // - 未携带 token 且开启强制令牌时：若已配置网络白名单，推迟到握手阶段用
-      //   network_name + digest 校验；否则没有任何可用鉴权手段，直接拒绝。
-      let requireToken = false;
-      let easyTierConfigCount = 0;
+      const dirStub = this.env.RELAY_ROOM.get(this.env.RELAY_ROOM.idFromName('__directory__'));
       try {
-        const policyRes = await dirStub.fetch(new Request('http://localhost/api/internal/policy'));
-        const policyData = await policyRes.json();
-        requireToken = !!(policyData && policyData.requireToken);
-        easyTierConfigCount = policyData && Number(policyData.easyTierConfigCount) || 0;
-      } catch (_) {}
-
-      if (clientToken) {
-        // Always verify explicit tokens: the directory DO allows everyone when
-        // requireToken is off, and rejects empty/invalid tokens when enabled.
-        const verifyRes = await dirStub.fetch(new Request(`http://localhost/api/internal/verify-token?token=${encodeURIComponent(clientToken)}`));
-        if (!verifyRes.ok) {
-          return new Response('Unauthorized: connection token invalid', { status: 401 });
+        const prepareRes = await dirStub.fetch(new Request(
+          `http://localhost/api/internal/prepare?room=${encodeURIComponent(roomId)}&token=${encodeURIComponent(clientToken)}`
+        ));
+        if (!prepareRes.ok) {
+          return new Response('Unauthorized: connection token required or invalid', { status: 401 });
         }
-      } else if (requireToken && easyTierConfigCount === 0) {
-        return new Response('Unauthorized: client token required. Note: EasyTier clients cannot send tokens via URL — configure an EasyTier network whitelist instead.', { status: 401 });
+      } catch (_) {
+        // Directory unreachable: fall through to public relay behaviour.
       }
-      // (无 token + 强制令牌 + 已配置网络白名单) → 握手阶段 verify-network 兜底鉴权
-
-      // Register room in directory
-      this.state.waitUntil(
-        dirStub.fetch(new Request('http://localhost/api/__directory__/room', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ roomId, token: 'active' })
-        })).catch(() => {})
-      );
     }
 
     const pair = new WebSocketPair();
@@ -267,18 +326,15 @@ export class RelayRoom {
         return;
       }
       ws.rxBytes = (ws.rxBytes || 0) + (buffer.length || 0);
-      console.log(`[ws] recv len=${buffer.length}`);
       ws.lastSeen = Date.now();
       const header = parseHeader(buffer);
       if (!header) {
         console.error('[ws] parseHeader failed, raw hex=', buffer.toString('hex'));
         return;
       }
-      console.log(`[ws] header from=${header.fromPeerId} to=${header.toPeerId} type=${header.packetType} len=${header.len}`);
       const payload = buffer.subarray(HEADER_SIZE);
       switch (header.packetType) {
         case PacketType.HandShake:
-          console.log(`[ws] -> handleHandshake payload hex=${payload.toString('hex')}`);
           await handleHandshake(ws, header, payload, this.types, this.env);
           break;
         case PacketType.Ping:
@@ -296,20 +352,15 @@ export class RelayRoom {
             handleRpcResp(ws, header, payload, this.types);
             break;
           }
-          // If toPeerId is not MY_PEER_ID, forward to the target peer
-          if (header.packetType !== PacketType.Data) {
-            console.log(`[ws] -> forward RpcResp type=${header.packetType} from=${header.fromPeerId} to=${header.toPeerId} len=${payload.length}`);
-          }
           handleForwarding(ws, header, buffer, this.types);
           break;
         case PacketType.Data:
         default:
-          if (header.packetType !== PacketType.Data) {
-            console.log(`[ws] -> forward type=${header.packetType} len=${payload.length}`);
+          // Hot path: in-memory counter, batched persistence (no per-packet I/O).
+          if (this._bytesIn === null) {
+            this._bytesIn = (await this.state.storage.get('bytesIn')) ?? 0;
           }
-          // Update inbound byte counter
-          const inbound = await this.state.storage.get('bytesIn') ?? 0;
-          await this.state.storage.put('bytesIn', inbound + buffer.length);
+          this._addInboundBytes(buffer.length);
           handleForwarding(ws, header, buffer, this.types);
       }
     } catch (e) {
@@ -331,6 +382,7 @@ export class RelayRoom {
     // Decrement connection count
     const conn = await this.state.storage.get('connections') ?? 0;
     await this.state.storage.put('connections', Math.max(0, conn - 1));
+    this._flushInboundBytes();
 
     // Automatically deregister empty room from the directory DO
     const activeCount = this.state.getWebSockets().filter(w => w.peerId).length;
@@ -422,10 +474,8 @@ export class RelayRoom {
     }
 
     if (path === '/stats' && request.method === 'GET') {
-      const [connections, bytesIn] = await Promise.all([
-        storage.get('connections') ?? 0,
-        storage.get('bytesIn') ?? 0,
-      ]);
+      const connections = (await storage.get('connections')) ?? 0;
+      const bytesIn = this._bytesIn ?? (await storage.get('bytesIn')) ?? 0;
       const stats = { connections, bytesIn };
       return new Response(JSON.stringify(stats), { status: 200, headers: { 'Content-Type': 'application/json' } });
     }
@@ -463,6 +513,20 @@ export class RelayRoom {
     };
     const saveConfig = async (config) => await storage.put('config', config);
     const getDir = async () => (await storage.get('directory')) ?? {};
+
+    // 0. GET /api/overview -> rooms + peers + totals in ONE request.
+    // The dashboard polls this; it replaces the previous 1 + N request fan-out.
+    if (path === '/api/overview' && method === 'GET') {
+      try {
+        const defaultStub = this.env.RELAY_ROOM.get(this.env.RELAY_ROOM.idFromName('default'));
+        const res = await defaultStub.fetch(new Request('http://localhost/api/internal/overview'));
+        if (res.ok) return res;
+      } catch (_) {}
+      return new Response(JSON.stringify({ rooms: [], totals: { peers: 0, rxBytes: 0, txBytes: 0 } }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
 
     // 1. GET /api/rooms -> return active networks from the `default` DO (all EasyTier peers)
     if (path === '/api/rooms' && method === 'GET') {

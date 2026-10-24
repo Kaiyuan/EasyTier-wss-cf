@@ -41,7 +41,9 @@ export default {
       return new Response(serveAdminDashboard, {
         headers: {
           'Content-Type': 'text/html; charset=utf-8',
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          // Cacheable so repeat panel opens cost no requests. Asset URLs carry
+          // content hashes, so new builds are picked up after this TTL.
+          'Cache-Control': 'public, max-age=300',
         },
       });
     }
@@ -59,7 +61,11 @@ export default {
       return new Response(asset, {
         headers: {
           'Content-Type': assetName.endsWith('.css') ? 'text/css; charset=utf-8' : 'application/javascript; charset=utf-8',
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          // Only fingerprint-verified URLs may be cached forever; unfingerprinted
+          // requests get a short TTL so a redeploy can never leave stale JS pinned.
+          'Cache-Control': url.searchParams.has('v')
+            ? 'public, max-age=31536000, immutable'
+            : 'public, max-age=300',
         },
       });
     }

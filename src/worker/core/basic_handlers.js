@@ -13,12 +13,6 @@ const networkDigestRegistry = new Map();
 export async function handleHandshake(ws, header, payload, types, env) {
   try {
     const req = types.HandshakeRequest.decode(payload);
-    try {
-      const dig = req.networkSecretDigrest ? Buffer.from(req.networkSecretDigrest) : Buffer.alloc(0);
-      console.log(`Handshake networkSecretDigest(hex)=${dig.toString('hex')}`);
-    } catch (_) {
-      // ignore
-    }
 
     if (req.magic !== MAGIC) {
       console.error('Invalid magic');

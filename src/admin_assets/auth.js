@@ -42,9 +42,8 @@ export const authScript = String.raw`
         window.token = data.token;
         localStorage.setItem('easytier_admin_token', window.token);
         await api.ensureServerMeta();
+        // showDashboard() already loads stats, EasyTier configs and starts polling
         api.showDashboard();
-        api.loadStats && api.loadStats();
-        api.startPolling && api.startPolling();
         api.updateUI();
       } else {
         const loginError = document.getElementById('loginError');

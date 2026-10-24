@@ -6,7 +6,6 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 WS_PATH = "ws"
 EASYTIER_DISABLE_RELAY = "0"
-EASYTIER_COMPRESS_RPC = "1"
 LOCATION_HINT = "apac"
 # Set ADMIN_PASSWORD as a Secret in the Cloudflare dashboard (Workers > Settings > Variables)
 # Do NOT commit your real password here.

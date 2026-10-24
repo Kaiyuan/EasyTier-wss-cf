@@ -84,18 +84,36 @@ export const sharedScript = String.raw`
     return window.serverWsPath || 'ws';
   };
 
+  // Short-lived cache so the dashboard's initial load (server meta + EasyTier
+  // configs) costs a single /api/config request instead of one per consumer.
+  api._configCache = null;
+  api._configCacheAt = 0;
+  api.invalidateConfigCache = function invalidateConfigCache() {
+    api._configCache = null;
+    api._configCacheAt = 0;
+  };
+  api.fetchConfig = async function fetchConfig(maxAgeMs) {
+    const ttl = typeof maxAgeMs === 'number' ? maxAgeMs : 5000;
+    if (api._configCache && Date.now() - api._configCacheAt < ttl) {
+      return api._configCache;
+    }
+    const res = await fetch('/api/config', {
+      headers: { 'Authorization': 'Bearer ' + window.token, 'X-Admin-Token': window.token }
+    });
+    if (!res.ok) throw new Error('config fetch failed');
+    const data = await res.json();
+    api._configCache = data;
+    api._configCacheAt = Date.now();
+    return data;
+  };
+
   api.ensureServerMeta = async function ensureServerMeta() {
     if (window.serverWsPath && typeof window.serverRequireToken === 'boolean') return;
     if (!window.token) return;
     try {
-      const res = await fetch('/api/config', {
-        headers: { 'Authorization': 'Bearer ' + window.token, 'X-Admin-Token': window.token }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        window.serverWsPath = data.wsPath || 'ws';
-        window.serverRequireToken = !!data.requireToken;
-      }
+      const data = await api.fetchConfig();
+      window.serverWsPath = data.wsPath || 'ws';
+      window.serverRequireToken = !!data.requireToken;
     } catch (error) {
       console.warn('Failed to load server meta', error);
     }

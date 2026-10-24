@@ -5,6 +5,10 @@ export const dashboardScript = String.raw`
 
   window.isPollingPaused = false;
 
+  // Polling cadence (seconds). Each tick costs Worker + Durable Object requests,
+  // so keep it relaxed; the tab being hidden skips polling entirely.
+  var POLL_SECONDS = 30;
+
   const TAB_DESCRIPTIONS = {
     overview: 'tab-overview-desc',
     configs: 'tab-configs-desc',
@@ -67,7 +71,7 @@ export const dashboardScript = String.raw`
   };
 
   api.manualRefresh = function manualRefresh() {
-    window.countdown = 5;
+    window.countdown = POLL_SECONDS;
     const spinner = document.getElementById('refreshSpinner');
     const clockIcon = document.getElementById('clockIcon');
     if (spinner) spinner.style.display = 'inline-block';
@@ -86,15 +90,27 @@ export const dashboardScript = String.raw`
 
   api.startPolling = function startPolling() {
     clearInterval(window.statsInterval);
-    window.countdown = 5;
+    window.countdown = POLL_SECONDS;
+
+    // Refresh immediately when the tab becomes visible again, and never poll
+    // while it's hidden (background tabs used to burn requests 24/7).
+    if (!window._pollingVisibilityBound) {
+      window._pollingVisibilityBound = true;
+      document.addEventListener('visibilitychange', function () {
+        if (!document.hidden && !window.isPollingPaused && window.token) {
+          window.countdown = 0;
+        }
+      });
+    }
+
     window.statsInterval = setInterval(() => {
-      if (window.isPollingPaused) {
+      if (window.isPollingPaused || document.hidden) {
         api.updateCountdownText();
         return;
       }
       window.countdown--;
       if (window.countdown <= 0) {
-        window.countdown = 5;
+        window.countdown = POLL_SECONDS;
         api.loadStats();
       }
       api.updateCountdownText();
@@ -104,30 +120,22 @@ export const dashboardScript = String.raw`
   api.loadStats = async function loadStats() {
     if (!window.token) return;
     try {
-      const res = await fetch('/api/rooms', {
+      // Single request per refresh: rooms + peers + totals in one payload
+      // (previously 1 request for the room list + 1 per room).
+      const res = await fetch('/api/overview', {
         headers: { 'Authorization': 'Bearer ' + window.token, 'X-Admin-Token': window.token }
       });
       if (!res.ok) throw new Error('API error');
       const data = await res.json();
-      window.globalStats.rooms = data.rooms || [];
+      const roomDetails = data.rooms || [];
+      window.globalStats.rooms = roomDetails;
       window.globalStats.totalPeers = 0;
       window.globalStats.totalRx = 0;
       window.globalStats.totalTx = 0;
 
-      const roomDetails = await Promise.all(window.globalStats.rooms.map(async (room) => {
-        const detailRes = await fetch('/api/rooms/' + encodeURIComponent(room.roomId) + '/stats', {
-          headers: { 'Authorization': 'Bearer ' + window.token, 'X-Admin-Token': window.token }
-        });
-        if (detailRes.ok) {
-          const detail = await detailRes.json();
-          return Object.assign({}, room, { peers: detail.peers || [] });
-        }
-        return Object.assign({}, room, { peers: [] });
-      }));
-
       roomDetails.forEach((room) => {
-        window.globalStats.totalPeers += room.peers.length;
-        room.peers.forEach((peer) => {
+        window.globalStats.totalPeers += (room.peers || []).length;
+        (room.peers || []).forEach((peer) => {
           window.globalStats.totalRx += peer.rxBytes || 0;
           window.globalStats.totalTx += peer.txBytes || 0;
         });

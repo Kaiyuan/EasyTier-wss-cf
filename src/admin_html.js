@@ -1,4 +1,5 @@
 import { buildAdminI18nScript } from "./admin_i18n/index.js";
+import { versionedAssetPath } from "./admin_assets/index.js";
 
 export const serveAdminDashboard = `<!DOCTYPE html>
 <html lang="en">
@@ -12,7 +13,7 @@ export const serveAdminDashboard = `<!DOCTYPE html>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="/assets/admin/style.css">
+    <link rel="stylesheet" href="${versionedAssetPath('style.css')}">
 </head>
 <body>
 
@@ -698,11 +699,11 @@ ${buildAdminI18nScript()}
             refreshTableLabels();
         }
     </script>
-    <script src="/assets/admin/shared.js" defer></script>
-    <script src="/assets/admin/auth.js" defer></script>
-    <script src="/assets/admin/dashboard.js" defer></script>
-    <script src="/assets/admin/tokens-settings.js" defer></script>
-    <script src="/assets/admin/boot.js" defer></script>
+    <script src="${versionedAssetPath('shared.js')}" defer></script>
+    <script src="${versionedAssetPath('auth.js')}" defer></script>
+    <script src="${versionedAssetPath('dashboard.js')}" defer></script>
+    <script src="${versionedAssetPath('tokens-settings.js')}" defer></script>
+    <script src="${versionedAssetPath('boot.js')}" defer></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             setupTableLabels();

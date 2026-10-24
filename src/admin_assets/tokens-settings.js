@@ -12,15 +12,10 @@ export const tokensSettingsScript = String.raw`
 
   api.loadEasyTierConfigs = async function loadEasyTierConfigs() {
     try {
-      const res = await fetch('/api/config', {
-        headers: { 'Authorization': 'Bearer ' + window.token, 'X-Admin-Token': window.token }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        window.easyTierConfigs = Array.isArray(data.easyTierConfigs) ? data.easyTierConfigs : [];
-        api.renderEasyTierConfigs();
-        api.updateConfigStatsSummary();
-      }
+      const data = await api.fetchConfig();
+      window.easyTierConfigs = Array.isArray(data.easyTierConfigs) ? data.easyTierConfigs : [];
+      api.renderEasyTierConfigs();
+      api.updateConfigStatsSummary();
     } catch (error) {
       console.error('Failed to load EasyTier configs:', error);
     }
@@ -287,6 +282,7 @@ export const tokensSettingsScript = String.raw`
       });
       if (res.ok) {
         alert(api.t('msg-config-deleted', 'Deleted'));
+        api.invalidateConfigCache && api.invalidateConfigCache();
         api.loadEasyTierConfigs();
       }
     } catch (error) {
@@ -363,6 +359,7 @@ export const tokensSettingsScript = String.raw`
         body: JSON.stringify({ easyTierConfig })
       });
       if (res.ok) {
+        api.invalidateConfigCache && api.invalidateConfigCache();
         const result = await res.json();
         if (result.config && Array.isArray(result.config.easyTierConfigs)) {
           window.easyTierConfigs = result.config.easyTierConfigs;
